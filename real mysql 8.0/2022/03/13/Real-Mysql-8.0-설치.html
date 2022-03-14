@@ -107,26 +107,26 @@ window.onload = wrap_img;
   <li><strong>Binary 설치 파일 다운로드</strong></li>
 </ol>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># 다운로드 할 경로에 접근
-$ cd /usr/local
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 다운로드 할 경로에 접근</span>
+<span class="nv">$ </span><span class="nb">cd</span> /usr/local
 
-# binary 파일 다운로드 (8.0.21 버전)
-$ wget https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.21-macos10.15-x86_64.tar.gz
+<span class="c"># binary 파일 다운로드 (8.0.21 버전)</span>
+<span class="nv">$ </span>wget https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.21-macos10.15-x86_64.tar.gz
 
-# 다운로드 파일 확인
-$ ll mysql-8.0*
--rw-r--r--  1 root  wheel   116M Jun 17  2020 mysql-8.0.21-macos10.15-x86_64.tar.gz
+<span class="c"># 다운로드 파일 확인</span>
+<span class="nv">$ </span>ll mysql-8.0<span class="k">*</span>
+<span class="nt">-rw-r--r--</span>  1 root  wheel   116M Jun 17  2020 mysql-8.0.21-macos10.15-x86_64.tar.gz
 </code></pre></div></div>
 
 <ol>
   <li><strong>압축 해제 및 Soft Link 연결</strong></li>
 </ol>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># tar 명령어를 사용하여 압축해제
-$ tar -zxvf mysql-8.0.21-macos10.15-x86_64.tar.gz
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># tar 명령어를 사용하여 압축해제</span>
+<span class="nv">$ </span><span class="nb">tar</span> <span class="nt">-zxvf</span> mysql-8.0.21-macos10.15-x86_64.tar.gz
 
-# Soft Link 연결
-$ ln -s /usr/local/mysql-8.0.21-macos10.15-x86_64 mysql
+<span class="c"># Soft Link 연결</span>
+<span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-s</span> /usr/local/mysql-8.0.21-macos10.15-x86_64 mysql
 
 </code></pre></div></div>
 
@@ -134,36 +134,36 @@ $ ln -s /usr/local/mysql-8.0.21-macos10.15-x86_64 mysql
   <li><strong>MySQL 서버 디렉토리 경로 설정 (Config 정리)</strong></li>
 </ol>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## config 파일 생성
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">## config 파일 생성</span>
 
-$ vi /etc/my.cnf
+<span class="nv">$ </span>vi /etc/my.cnf
 
-[mysqld]
-user=mysql
-basedir=/usr/local/mysql
-datadir=/usr/local/mysql_data
-socket=/usr/local/mysql_data/mysql.sock
+<span class="o">[</span>mysqld]
+<span class="nv">user</span><span class="o">=</span>mysql
+<span class="nv">basedir</span><span class="o">=</span>/usr/local/mysql
+<span class="nv">datadir</span><span class="o">=</span>/usr/local/mysql_data
+<span class="nv">socket</span><span class="o">=</span>/usr/local/mysql_data/mysql.sock
 
-# Disabling symbolic-links is recommended to prevent assorted security risks
-symbolic-links=0
+<span class="c"># Disabling symbolic-links is recommended to prevent assorted security risks</span>
+symbolic-links<span class="o">=</span>0
 
-#replication
-log-bin=/usr/local/mysql_data/bin_log/mysql-bin
-server-id=1
+<span class="c">#replication</span>
+log-bin<span class="o">=</span>/usr/local/mysql_data/bin_log/mysql-bin
+server-id<span class="o">=</span>1
 
-#character_set
-collation-server = utf8mb4_unicode_ci
-character-set-server = utf8mb4
+<span class="c">#character_set</span>
+collation-server <span class="o">=</span> utf8mb4_unicode_ci
+character-set-server <span class="o">=</span> utf8mb4
 skip-character-set-client-handshake
 
-[mysqld_safe]
-log-error=/var/log/mysqld.log
-pid-file=/usr/local/mysql_data/mysql.pid
+<span class="o">[</span>mysqld_safe]
+log-error<span class="o">=</span>/var/log/mysqld.log
+pid-file<span class="o">=</span>/usr/local/mysql_data/mysql.pid
 
-#
-# include all files from the config directory
-#
-!includedir /etc/my.cnf.d
+<span class="c">#</span>
+<span class="c"># include all files from the config directory</span>
+<span class="c">#</span>
+<span class="o">!</span>includedir /etc/my.cnf.d
 </code></pre></div></div>
 
   </div><a class="u-url" href="/Martin-IT-Blog/real%20mysql%208.0/2022/03/13/Real-Mysql-8.0-%EC%84%A4%EC%B9%98.html" hidden></a>
