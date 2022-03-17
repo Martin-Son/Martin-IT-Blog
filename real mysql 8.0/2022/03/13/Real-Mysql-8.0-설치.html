@@ -120,7 +120,19 @@ window.onload = wrap_img;
 <ol>
   <li>
 <strong>Binary 설치 파일 다운로드</strong>
-```bash
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> <span class="c"># 다운로드 할 경로에 접근</span>
+ <span class="nv">$ </span><span class="nb">cd</span> /usr/local
+
+ <span class="c"># binary 파일 다운로드 (8.0.21 버전)</span>
+ <span class="nv">$ </span>wget https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.21-linux-glibc2.12-x86_64.tar.xz
+
+ <span class="c"># 다운로드 파일 확인</span>
+ <span class="nv">$ </span>ll mysql-8.0<span class="k">*</span>
+ <span class="nt">-rw-r--r--</span> 1 root root 347814208 Jun 17  2020 mysql-8.0.21-linux-glibc2.12-x86_64.tar.xz
+</code></pre></div>    </div>
+  </li>
+  <li>```bash
     <h1 id="다운로드-할-경로에-접근">
 <a class="anchor" href="#%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C-%ED%95%A0-%EA%B2%BD%EB%A1%9C%EC%97%90-%EC%A0%91%EA%B7%BC" aria-hidden="true"><span class="octicon octicon-link"></span></a>다운로드 할 경로에 접근</h1>
     <p>$ cd /usr/local</p>
