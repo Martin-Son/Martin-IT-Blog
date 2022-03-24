@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>https://martin-son.github.io/Martin-IT-Blog/markdown/2020/01/14/test-markdown-post.html</loc>
-<lastmod>2020-01-14T00:00:00-06:00</lastmod>
-</url>
-<url>
 <loc>https://martin-son.github.io/Martin-IT-Blog/jupyter/2020/02/20/test.html</loc>
 <lastmod>2020-02-20T00:00:00-06:00</lastmod>
 </url>
@@ -29,6 +25,6 @@
 </url>
 <url>
 <loc>https://martin-son.github.io/Martin-IT-Blog/google49107dd77c0509ed.html</loc>
-<lastmod>2022-03-24T00:57:00-05:00</lastmod>
+<lastmod>2022-03-24T01:35:05-05:00</lastmod>
 </url>
 </urlset>
