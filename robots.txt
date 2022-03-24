@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://martin-son.github.io/Martin-IT-Blog/sitemap.xml
