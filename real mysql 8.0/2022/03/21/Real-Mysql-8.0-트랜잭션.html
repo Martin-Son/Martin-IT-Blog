@@ -137,48 +137,48 @@ window.onload = wrap_img;
 <a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98-%ED%8A%B9%EC%84%B1%EC%97%90-%EB%94%B0%EB%A5%B8-%EA%B2%B0%EA%B3%BC-%EC%B0%A8%EC%9D%B4" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>트랜잭션 특성에 따른 결과 차이</strong>
 </h3>
 <ul>
-  <li>MySQL에서 대부분 사용되는 엔진은 InnoDB입니다. InnoDB는 트랜잭션을 지원하는 스토리지 엔진이며, Default 스토리지 엔진입니다.
-하지만, 사용 가능한 다른 엔진 중 MyISAM 엔진은 트랜잭션을 지원하지 않으며, 그로 인해 데이터 정합성 보장이 되지 않습니다.
-트랜잭션 지원 여부에 따라 달라지는 결과에 대해 아래 테스트를 이용해 확인해봤습니다.</li>
+  <li>MySQL에서 대부분 사용되는 엔진은 InnoDB입니다. InnoDB는 트랜잭션을 지원하는 스토리지 엔진이며, Default 스토리지 엔진입니다.</li>
+  <li>MySQL에서 사용가능 한 MyISAM 엔진은 트랜잭션을 지원하지 않으며, 그로 인해 데이터 정합성 보장이 되지 않습니다.</li>
+  <li>트랜잭션 지원 여부에 따라 달라지는 결과에 대해 아래 테스트를 이용해 확인해봤습니다.
+```sql
+– myisam 테이블 생성 
+mysql&gt; CREATE TABLE tab_myisam ( fdpk INT NOT NULL, PRIMARY KEY (fdpk) ) ENGINE=MyISAM;
+Query OK, 0 rows affected (0.02 sec)
+mysql&gt; INSERT INTO tab_myisam (fdpk) VALUES (3);
+Query OK, 1 row affected (0.01 sec)</li>
 </ul>
 
-<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- myisam 테이블 생성 </span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tab_myisam</span> <span class="p">(</span> <span class="n">fdpk</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span><span class="p">;</span>
-<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_myisam</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">1</span> <span class="k">row</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+<p>– innodb 테이블 생성 
+mysql&gt; CREATE TABLE tab_innodb ( fdpk INT NOT NULL, PRIMARY KEY (fdpk) ) ENGINE=InnoDB;
+Query OK, 0 rows affected (0.03 sec)
+mysql&gt; INSERT INTO tab_innodb (fdpk) VALUES (3);
+Query OK, 1 row affected (0.01 sec)</p>
 
-<span class="c1">-- innodb 테이블 생성 </span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tab_innodb</span> <span class="p">(</span> <span class="n">fdpk</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="p">;</span>
-<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">03</span> <span class="n">sec</span><span class="p">)</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_innodb</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">1</span> <span class="k">row</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+<p>– PK 중복 에러가 발생하도록, (1,2,3) Insert
+mysql&gt; INSERT INTO tab_myisam (fdpk) VALUES (1), (2), (3);
+ERROR 1062 (23000): Duplicate entry ‘3’ for key ‘tab_myisam.PRIMARY’
+mysql&gt; INSERT INTO tab_innodb (fdpk) VALUES (1), (2), (3);
+ERROR 1062 (23000): Duplicate entry ‘3’ for key ‘tab_innodb.PRIMARY’</p>
 
-<span class="c1">-- PK 중복 에러가 발생하도록, (1,2,3) Insert</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_myisam</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">ERROR</span> <span class="mi">1062</span> <span class="p">(</span><span class="mi">23000</span><span class="p">):</span> <span class="n">Duplicate</span> <span class="n">entry</span> <span class="s1">'3'</span> <span class="k">for</span> <span class="k">key</span> <span class="s1">'tab_myisam.PRIMARY'</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_innodb</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">ERROR</span> <span class="mi">1062</span> <span class="p">(</span><span class="mi">23000</span><span class="p">):</span> <span class="n">Duplicate</span> <span class="n">entry</span> <span class="s1">'3'</span> <span class="k">for</span> <span class="k">key</span> <span class="s1">'tab_innodb.PRIMARY'</span>
+<p>– Insert 작업 실패 후, 테이블 데이터 확인
+mysql&gt; SELECT * FROM tab_myisam;
++——+
+| fdpk |
++——+
+|    1 |
+|    2 |
+|    3 |
++——+
+3 rows in set (0.00 sec)</p>
 
-<span class="c1">-- Insert 작업 실패 후, 테이블 데이터 확인</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">tab_myisam</span><span class="p">;</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span> <span class="n">fdpk</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">2</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">3</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="mi">3</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
-
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">tab_innodb</span><span class="p">;</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span> <span class="n">fdpk</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span>    <span class="mi">3</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
-</code></pre></div></div>
+<p>mysql&gt; SELECT * FROM tab_innodb;
++——+
+| fdpk |
++——+
+|    3 |
++——+
+1 row in set (0.01 sec)
+```</p>
 
   </div><!-- from https://github.com/utterance/utterances
 <script src="https://utteranc.es/client.js"
