@@ -96,40 +96,38 @@ window.onload = wrap_img;
 
   <div class="post-content e-content" itemprop="articleBody">
     <ul id="toc" class="section-nav">
-<li class="toc-entry toc-h1"><a href="#트랜잭션이란">트랜잭션이란?</a></li>
-<li class="toc-entry toc-h1"><a href="#트랜잭션의-특성">트랜잭션의 특성</a></li>
-</ul><h1 id="트랜잭션이란">
-<a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%B4%EB%9E%80" aria-hidden="true"><span class="octicon octicon-link"></span></a>트랜잭션이란?</h1>
-<ul>
-  <li>논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해
-작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다.</li>
-</ul>
+<li class="toc-entry toc-h2"><a href="#트랜잭션이란">트랜잭션이란?</a></li>
+<li class="toc-entry toc-h2"><a href="#트랜잭션의-특성">트랜잭션의 특성</a></li>
+</ul><h2 id="트랜잭션이란">
+<a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%B4%EB%9E%80" aria-hidden="true"><span class="octicon octicon-link"></span></a>트랜잭션이란?</h2>
+<p>논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해
+작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다.</p>
 
-<h1 id="트랜잭션의-특성">
-<a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%ED%8A%B9%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>트랜잭션의 특성</h1>
-<ul>
-  <li>트랜잭션에는 아래 네가지 특성이 존재하며 각 특성의 앞글자를 따서 ACID로 불립니다.
-    <ol>
-      <li>원자성 (Atomicity)</li>
-    </ol>
+<h2 id="트랜잭션의-특성">
+<a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%ED%8A%B9%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>트랜잭션의 특성</h2>
+<p>트랜잭션에는 아래 네가지 특성이 존재하며 각 특성의 앞글자를 따서 ACID로 불립니다.</p>
+<ol>
+  <li>원자성 (Atomicity)
+    <ul>
+      <li>트랜잭션이 하나의 수행단위이며, 완전히 수행(Commit) 되거나 전혀 수행되지 않아야 합니다(Rollback)</li>
+    </ul>
   </li>
-  <li>트랜잭션이 하나의 수행단위이며, 완전히 수행(Commit) 되거나 전혀 수행되지 않아야 합니다(Rollback)
-    <ol>
-      <li>일관성 (Consistency)</li>
-    </ol>
+  <li>일관성 (Consistency)
+    <ul>
+      <li>트랜잭션이 끝난 전후로 데이터베이스는 항상 일관된 상태(제약조건 만족)를 유지해야 합니다</li>
+    </ul>
   </li>
-  <li>트랜잭션이 끝난 전후로 데이터베이스는 항상 일관된 상태(제약조건 만족)를 유지해야 합니다
-    <ol>
-      <li>고립성 (Isolation)</li>
-    </ol>
+  <li>고립성 (Isolation)
+    <ul>
+      <li>서로 다른 트랜잭션은 독립적이며 간섭할 수 없는 상태입니다.</li>
+    </ul>
   </li>
-  <li>서로 다른 트랜잭션은 독립적이며 간섭할 수 없는 상태입니다.
-    <ol>
-      <li>지속성 (Durability)</li>
-    </ol>
+  <li>지속성 (Durability)
+    <ul>
+      <li>트랜잭션이 Data를 변경시킨 뒤 Commit 되면 이후 데이터는 손실되지 않고 유지됩니다.</li>
+    </ul>
   </li>
-  <li>트랜잭션이 Data를 변경시킨 뒤 Commit 되면 이후 데이터는 손실되지 않고 유지됩니다.</li>
-</ul>
+</ol>
 
 <p><strong>트랜잭션 특성에 따른 결과 차이</strong>
 MySQL에서 사용하는 것으로 알려진 대표직인 2개의 Storage Engine이 존재하는데, InnoDB / MyISAM 엔진입니다.
