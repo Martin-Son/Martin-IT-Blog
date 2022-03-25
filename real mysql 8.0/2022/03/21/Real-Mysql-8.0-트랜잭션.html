@@ -129,9 +129,11 @@ window.onload = wrap_img;
   </li>
 </ol>
 
-<p><strong>트랜잭션 특성에 따른 결과 차이</strong>
-MySQL에서 사용하는 것으로 알려진 대표직인 2개의 Storage Engine이 존재하는데, InnoDB / MyISAM 엔진입니다.
-위에서 설명한 트랜잭션의 특성을 따르는 InnoDB 테이블과 그렇지 않은 MyISAM 테이블 결과를 아래 테스트를 통해 비교해보겠습니다.</p>
+<p><strong>트랜잭션 특성에 따른 결과 차이</strong></p>
+<ul>
+  <li>MySQL에서 사용하는 것으로 알려진 대표직인 2개의 Storage Engine이 존재하는데, InnoDB / MyISAM 엔진입니다.
+위에서 설명한 트랜잭션의 특성을 따르는 InnoDB 테이블과 그렇지 않은 MyISAM 테이블 결과를 아래 테스트를 통해 비교해보겠습니다.</li>
+</ul>
 
 <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- myisam 테이블 생성 </span>
 <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tab_myisam</span> <span class="p">(</span> <span class="n">fdpk</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span><span class="p">;</span>
