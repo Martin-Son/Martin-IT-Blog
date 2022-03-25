@@ -79,7 +79,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      1 min read
+      13 min read
     
 </span></p>
 
@@ -96,10 +96,26 @@ window.onload = wrap_img;
 
   <div class="post-content e-content" itemprop="articleBody">
     <ul id="toc" class="section-nav">
-<li class="toc-entry toc-h2"><a href="#트랜잭션이란">트랜잭션이란?</a></li>
-<li class="toc-entry toc-h2"><a href="#트랜잭션의-특성">트랜잭션의 특성</a>
+<li class="toc-entry toc-h2"><a href="#트랜잭션이란">트랜잭션이란?</a>
 <ul>
-<li class="toc-entry toc-h3"><a href="#트랜잭션-특성에-따른-결과-차이">트랜잭션 특성에 따른 결과 차이</a></li>
+<li class="toc-entry toc-h3"><a href="#트랜잭션의-특성">트랜잭션의 특성</a></li>
+<li class="toc-entry toc-h3"><a href="#트랜잭션-특성에-따른-결과-차이">트랜잭션 특성에 따른 결과 차이</a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#백업-락">백업 락</a></li>
+<li class="toc-entry toc-h4"><a href="#테이블-락">테이블 락</a></li>
+<li class="toc-entry toc-h4"><a href="#네임드-락">네임드 락</a></li>
+<li class="toc-entry toc-h4"><a href="#메타데이터-락">메타데이터 락</a></li>
+<li class="toc-entry toc-h4"><a href="#레코드-락">레코드 락</a></li>
+<li class="toc-entry toc-h4"><a href="#갭gap-락">갭(GAP) 락</a></li>
+<li class="toc-entry toc-h4"><a href="#넥스트-키-락">넥스트 키 락</a></li>
+<li class="toc-entry toc-h4"><a href="#자동-증가-락">자동 증가 락</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#격리-수준isolation-level">격리 수준(Isolation-Level)</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#isolation-level에-따른-특징">Isolation Level에 따른 특징</a></li>
 </ul>
 </li>
 </ul><h2 id="트랜잭션이란">
@@ -107,8 +123,8 @@ window.onload = wrap_img;
 <p>논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해
 작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다.</p>
 
-<h2 id="트랜잭션의-특성">
-<a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%ED%8A%B9%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>트랜잭션의 특성</h2>
+<h3 id="트랜잭션의-특성">
+<a class="anchor" href="#%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%9D%98-%ED%8A%B9%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>트랜잭션의 특성</h3>
 <p>트랜잭션에는 아래 네가지 특성이 존재하며 각 특성의 앞글자를 따서 ACID로 불립니다.</p>
 <ol>
   <li>원자성 (Atomicity)
@@ -140,45 +156,558 @@ window.onload = wrap_img;
   <li>MySQL에서 대부분 사용되는 엔진은 InnoDB입니다. InnoDB는 트랜잭션을 지원하는 스토리지 엔진이며, Default 스토리지 엔진입니다.</li>
   <li>MySQL에서 사용가능 한 MyISAM 엔진은 트랜잭션을 지원하지 않으며, 그로 인해 데이터 정합성 보장이 되지 않습니다.</li>
   <li>트랜잭션 지원 여부에 따라 달라지는 결과에 대해 아래 테스트를 이용해 확인해봤습니다.</li>
+  <li>
+    <ul>
+      <li>MyISAM 테이블의 경우, 트랜잭션이 실패했지만 결과가 부분적으로 성공 (=Partial Update)
+```sql
+– myisam 테이블 생성 
+mysql&gt; CREATE TABLE tab_myisam ( fdpk INT NOT NULL, PRIMARY KEY (fdpk) ) ENGINE=MyISAM;
+Query OK, 0 rows affected (0.02 sec)
+mysql&gt; INSERT INTO tab_myisam (fdpk) VALUES (3);
+Query OK, 1 row affected (0.01 sec)</li>
+    </ul>
+  </li>
 </ul>
 
-<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- myisam 테이블 생성 </span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tab_myisam</span> <span class="p">(</span> <span class="n">fdpk</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span><span class="p">;</span>
-<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_myisam</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">1</span> <span class="k">row</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+<p>– innodb 테이블 생성 
+mysql&gt; CREATE TABLE tab_innodb ( fdpk INT NOT NULL, PRIMARY KEY (fdpk) ) ENGINE=InnoDB;
+Query OK, 0 rows affected (0.03 sec)
+mysql&gt; INSERT INTO tab_innodb (fdpk) VALUES (3);
+Query OK, 1 row affected (0.01 sec)</p>
 
-<span class="c1">-- innodb 테이블 생성 </span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tab_innodb</span> <span class="p">(</span> <span class="n">fdpk</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="p">;</span>
+<p>– PK 중복 에러가 발생하도록, (1,2,3) Insert
+mysql&gt; INSERT INTO tab_myisam (fdpk) VALUES (1), (2), (3);
+ERROR 1062 (23000): Duplicate entry ‘3’ for key ‘tab_myisam.PRIMARY’
+mysql&gt; INSERT INTO tab_innodb (fdpk) VALUES (1), (2), (3);
+ERROR 1062 (23000): Duplicate entry ‘3’ for key ‘tab_innodb.PRIMARY’</p>
+
+<p>– Insert 작업 실패 후, 테이블 데이터 확인
+mysql&gt; SELECT * FROM tab_myisam;
++——+
+| fdpk |
++——+
+|    1 |
+|    2 |
+|    3 |
++——+
+3 rows in set (0.00 sec)</p>
+
+<p>mysql&gt; SELECT * FROM tab_innodb;
++——+
+| fdpk |
++——+
+|    3 |
++——+
+1 row in set (0.01 sec)</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+## 잠금(Lock)
+잠금이란, 다중 트랜잭션 환경에서 데이터 일관성을 유지할 수 있게 마련된 장치입니다.
+잠금 동작은 트랜잭션 Isolation Level에 따라 영향을 받습니다. 각 Isolation level에 따른 특징은
+아래 링크를 참조하시면 됩니다. MySQL 기본 Isolation Level은 **Reapeatable Read**입니다.
+
+MySQL에서 잠금은 크게 아래 두 가지 레벨로 분류됩니다.
+1. 스토리지 엔진 레벨
+: 모든 스토리지 엔진에 영향을 주는 잠금 (ex) 테이블 Lock, 메타데이터 Lock, 네임드 Lock
+2. MySQL 엔진 레벨
+: 스토리지 엔진 상호 간 영향을 주지 않는 잠금 (ex) 스토리지 엔진 잠금 이외에 모든 Lock
+
+### **잠금의 종류**
+#### **글로벌 락**
+- 글로벌 락은 `FLUSH TABLES WITH READ LOCK` 명령어를 통해 획득할 수 있으며, 현재 MySQL에서 제공하는 Lock 중 가장 큽니다.
+- 한 세션에서 글로벌 락을 소유할 경우, 조회를 제외한 모든 DDL, DML 세션이 대기하게 됩니다.
+- 동일 오브젝트가 아닌 다른 오브젝트에 대한 모든 접근이 영향을 받습니다.
+- 일관된 데이터를 mysqldump툴을 이용한 **백업**을 받을 때 사용되는 Lock입니다. (옵션에 따라 조절 가능)
+
+```sql
+-- Session 1
+mysql&gt; FLUSH TABLES WITH READ LOCK;
+Query OK, 0 rows affected (0.02 sec)
+
+-- Session 2 (SELECT, DML, DDL 시도)
+mysql&gt; SELECT * FROM tab_innodb;
++------+
+| fdpk |
++------+
+|    3 |
++------+
+1 row in set (0.00 sec)
+
+mysql&gt; INSERT INTO tab_innodb VALUES (1), (2), (4);
+ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
+
+mysql&gt; ALTER TABLE tab_innodb ADD add_col varchar(10), ALGORITHM = INPLACE, LOCK = NONE;
+ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
+
+
+-- 글로벌 Lock으로 인해 조회 쿼리를 제외한 모든 쿼리가 실패한다.
+</code></pre></div></div>
+
+<h4 id="백업-락">
+<a class="anchor" href="#%EB%B0%B1%EC%97%85-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>백업 락</strong>
+</h4>
+<ul>
+  <li>InnoDB의 경우, 트랜잭션을 지원하며 일관된 상태를 보장하므로 모든 데이터 변경 작업을 멈추는 것이 비효율적입니다.</li>
+  <li>글로벌 락에 비해 좀 더 가벼운 락의 필요성이 생기게 되어 새로 도입된 Lock입니다.</li>
+  <li>백업 락이 걸려있을 경우, 데이터 조회, 변경은 가능하며 아래 명령어들은 잠금에 의해 영향을 받습니다.
+    <ul>
+      <li>스키마 관련 작업 (DDL)</li>
+      <li>REPAIR TABLE / OPTIMIZE TABLE</li>
+      <li>사용자 관리 / 비밀번호 변경</li>
+    </ul>
+  </li>
+  <li>Replica에서 Xtrabackup 툴을 이용한 백업 도중 기존에는 DDL 실행 시, 백업이 실패했지만
+백업 락을 이용해 DDL이 실행되더라도 백업은 성공하고, 복제는 멈추게 됩니다.</li>
+</ul>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- Session 1</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">LOCK</span> <span class="n">INSTANCE</span> <span class="k">FOR</span> <span class="n">BACKUP</span><span class="p">;</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+
+<span class="c1">-- Session 2 (SELECT, DML, DDL 시도)</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">START</span> <span class="n">TRANSACTION</span><span class="p">;</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_innodb</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">3</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">Records</span><span class="p">:</span> <span class="mi">3</span>  <span class="n">Duplicates</span><span class="p">:</span> <span class="mi">0</span>  <span class="n">Warnings</span><span class="p">:</span> <span class="mi">0</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">ROLLBACK</span><span class="p">;</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">tab_innodb</span> <span class="k">ADD</span> <span class="n">add_col</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">ALGORITHM</span> <span class="o">=</span> <span class="n">INPLACE</span><span class="p">,</span> <span class="k">LOCK</span> <span class="o">=</span> <span class="k">NONE</span><span class="p">;</span>
+<span class="n">ERROR</span> <span class="mi">1205</span> <span class="p">(</span><span class="n">HY000</span><span class="p">):</span> <span class="k">Lock</span> <span class="n">wait</span> <span class="n">timeout</span> <span class="n">exceeded</span><span class="p">;</span> <span class="n">try</span> <span class="n">restarting</span> <span class="n">transaction</span>
+
+<span class="c1">-- 백업 Lock으로 인해 DDL은 실패</span>
+</code></pre></div></div>
+<h4 id="테이블-락">
+<a class="anchor" href="#%ED%85%8C%EC%9D%B4%EB%B8%94-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>테이블 락</strong>
+</h4>
+<ul>
+  <li>개별 테이블 단위의 잠금입니다.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">LOCK TABLES [테이블명] [READ | WRITE]</code> 명령어를 이용해 명시적으로 잠금을 획득합니다.
+    <blockquote>
+      <p>[실제 운영에서 사용되는 경우는 거의 없습니다]</p>
+    </blockquote>
+  </li>
+  <li>InnoDB 엔진 테이블의 경우, 레코드 기반 잠금을 지원하여 DML 작업에서 테이블 Lock은 발생하지 않습니다.
+    <blockquote>
+      <p>특정 유형의 DDL 실행 시, 잠금이 발생합니다.
+ALGORITHM=INPLACE, LOCK=NONE 옵션을 이용해 작업 유형별 Online DDL이 가능한 경우합 있습니다.</p>
+    </blockquote>
+  </li>
+</ul>
+
+<h4 id="네임드-락">
+<a class="anchor" href="#%EB%84%A4%EC%9E%84%EB%93%9C-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>네임드 락</strong>
+</h4>
+<ul>
+  <li>네임드락은 GET_LOCK() 함수를 이용하여 특정 문자열에 대한 잠금 획득이 가능합니다.</li>
+  <li>데이터베이스 관련 오브젝트가 아닌, 단순 사용자 지정 문자열에 대한 잠금입니다.</li>
+</ul>
+
+<h4 id="메타데이터-락">
+<a class="anchor" href="#%EB%A9%94%ED%83%80%EB%8D%B0%EC%9D%B4%ED%84%B0-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>메타데이터 락</strong>
+</h4>
+<ul>
+  <li>메타데이터 락은 객체 이름이나 구조를 변경 (ex. DDL, RENAME)할 때 잠금을 획득합니다.</li>
+  <li>해당 Lock이 걸린 객체에 대해, DML이나 DDL은 불가합니다.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">performance_schema.metadata_locks</code> 테이블을 통해 확인 가능합니다.
+    <ul>
+      <li>8.0 버전으로 업그레이드 되면서 Default로 활성화되도록 변경됐습니다.</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 테스트 테이블 생성 &amp; 1000만 건 데이터 생성</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="nv">`lock_table`</span> <span class="p">(</span>
+        <span class="nv">`id`</span> <span class="nb">int</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+        <span class="nv">`calendar`</span> <span class="nb">date</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+        <span class="nv">`num`</span> <span class="nb">int</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+        <span class="nv">`num_2`</span> <span class="nb">int</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+        <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="nv">`id`</span><span class="p">),</span>
+        <span class="k">KEY</span> <span class="nv">`idx_calendar`</span> <span class="p">(</span><span class="nv">`calendar`</span><span class="p">),</span>
+        <span class="k">KEY</span> <span class="nv">`idx_num`</span> <span class="p">(</span><span class="nv">`num`</span><span class="p">)</span>
+        <span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="n">AUTO_INCREMENT</span><span class="o">=</span><span class="mi">10026856</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span> <span class="k">COLLATE</span><span class="o">=</span><span class="n">utf8mb4_unicode_ci</span><span class="p">;</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="n">lock_table</span><span class="p">(</span><span class="n">calendar</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">num_2</span><span class="p">)</span>
+       <span class="k">SELECT</span> <span class="p">(</span><span class="k">CURRENT_DATE</span> <span class="o">-</span> <span class="n">INTERVAL</span> <span class="n">FLOOR</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span> <span class="o">*</span> <span class="mi">14</span><span class="p">)</span> <span class="k">DAY</span><span class="p">),</span>
+              <span class="k">cast</span><span class="p">(</span><span class="n">rand</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">as</span> <span class="nb">unsigned</span><span class="p">),</span>
+              <span class="k">cast</span><span class="p">(</span><span class="n">rand</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">as</span> <span class="nb">unsigned</span><span class="p">)</span>
+       <span class="k">FROM</span> <span class="n">information_schema</span><span class="p">.</span><span class="n">TABLES</span> <span class="n">a</span>
+             <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">information_schema</span><span class="p">.</span><span class="n">TABLES</span> <span class="n">B</span>
+             <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">information_schema</span><span class="p">.</span><span class="n">TABLES</span> <span class="k">C</span>
+       <span class="k">LIMIT</span> <span class="mi">10000000</span><span class="p">;</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">10000000</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">2</span> <span class="k">min</span> <span class="mi">28</span><span class="p">.</span><span class="mi">57</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">Records</span><span class="p">:</span> <span class="mi">10000000</span>  <span class="n">Duplicates</span><span class="p">:</span> <span class="mi">0</span>  <span class="n">Warnings</span><span class="p">:</span> <span class="mi">0</span>
+
+<span class="c1">-- Session 1 (INDEX 생성 시도)</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">lock_table</span> <span class="k">ADD</span> <span class="k">INDEX</span> <span class="n">lock_idx3</span> <span class="p">(</span><span class="n">calendar</span><span class="p">,</span> <span class="n">num_2</span><span class="p">);</span>
+
+<span class="c1">-- Session 2 (metadata Lock 정보 확인)</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">OBJECT_TYPE</span><span class="p">,</span> <span class="n">OBJECT_SCHEMA</span><span class="p">,</span> <span class="n">OBJECT_NAME</span><span class="p">,</span> <span class="n">LOCK_TYPE</span><span class="p">,</span> <span class="k">SOURCE</span><span class="p">,</span> <span class="n">OWNER_THREAD_ID</span> <span class="k">FROM</span> <span class="n">performance_schema</span><span class="p">.</span><span class="n">metadata_locks</span> <span class="k">WHERE</span> <span class="n">OBJECT_SCHEMA</span> <span class="o">&lt;&gt;</span> <span class="s1">'performance_schema'</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">-------------+---------------+--------------+---------------------+--------------------+-----------------+</span>
+<span class="o">|</span> <span class="n">OBJECT_TYPE</span> <span class="o">|</span> <span class="n">OBJECT_SCHEMA</span> <span class="o">|</span> <span class="n">OBJECT_NAME</span>  <span class="o">|</span> <span class="n">LOCK_TYPE</span>           <span class="o">|</span> <span class="k">SOURCE</span>             <span class="o">|</span> <span class="n">OWNER_THREAD_ID</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+---------------+--------------+---------------------+--------------------+-----------------+</span>
+<span class="o">|</span> <span class="k">SCHEMA</span>      <span class="o">|</span> <span class="n">test</span>          <span class="o">|</span> <span class="k">NULL</span>         <span class="o">|</span> <span class="n">INTENTION_EXCLUSIVE</span> <span class="o">|</span> <span class="n">sql_base</span><span class="p">.</span><span class="n">cc</span><span class="p">:</span><span class="mi">5399</span>   <span class="o">|</span>              <span class="mi">92</span> <span class="o">|</span>
+<span class="o">|</span> <span class="k">TABLE</span>       <span class="o">|</span> <span class="n">test</span>          <span class="o">|</span> <span class="n">lock_table</span>   <span class="o">|</span> <span class="n">SHARED_UPGRADABLE</span>   <span class="o">|</span> <span class="n">sql_parse</span><span class="p">.</span><span class="n">cc</span><span class="p">:</span><span class="mi">6162</span>  <span class="o">|</span>              <span class="mi">92</span> <span class="o">|</span>
+<span class="o">|</span> <span class="k">TABLE</span>       <span class="o">|</span> <span class="n">test</span>          <span class="o">|</span> <span class="o">#</span><span class="k">sql</span><span class="o">-</span><span class="mi">28</span><span class="n">c7_30</span> <span class="o">|</span> <span class="k">EXCLUSIVE</span>           <span class="o">|</span> <span class="n">sql_table</span><span class="p">.</span><span class="n">cc</span><span class="p">:</span><span class="mi">16434</span> <span class="o">|</span>              <span class="mi">92</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+---------------+--------------+---------------------+--------------------+-----------------+</span>
+<span class="mi">3</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+
+</code></pre></div></div>
+<h4 id="레코드-락">
+<a class="anchor" href="#%EB%A0%88%EC%BD%94%EB%93%9C-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>레코드 락</strong>
+</h4>
+<ul>
+  <li>테이블 인덱스 레코드별로 잠금을 획득합니다.</li>
+  <li>인덱스가 없는 레코드의 경우, InnoDB에서는 내부적으로 auto_inc PK를 생성해 레코드 잠금을 획득합니다.</li>
+  <li>레코드 잠금은 <strong>Primary Key, Unique Key</strong>을 사용하는 작업에서 할당됩니다.</li>
+  <li>레코드 락의 종류에는 세 가지가 존재합니다.
+    <ul>
+      <li>
+<strong>S-lock</strong> : 다른 트랜잭션이 S-lock을 소유한 오브젝트에 대해 S-lock만 획득 가능한 Lock입니다.</li>
+      <li>
+<strong>X-lock</strong> : 다른 트랜잭션이 X-lock을 소유한 오브젝트에 대해 S-lock, X-lock을 획득할 수 없도록 제한합니다.</li>
+      <li>
+<strong>Intention-lock</strong> : Row-level / Table-level 락이 함께 사용되는 다중 잠금 계층을 지원합니다.
+        <ol>
+          <li>Intention Shared Lock (IS) : 해당 테이블 각 행에, S-lock 설정</li>
+          <li>Intention Exclusive Lock (IX) : 해당 테이블 각 행에 X-lock 설정
+            <ul>
+              <li>Intention Lock (의도락)을 통해 어떤 Lock을 획득할 것인지 미리 알려, 트랜잭션의 접근을 효과적으로 제어하는 방법입니다.
+그러므로 Intention Lock을 Table-Level로 건 후, Row-Level Lock을 할당합니다.</li>
+            </ul>
+          </li>
+        </ol>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p><img src="/Martin-IT-Blog/images/lock_compatibility.png" alt="" title="잠금 호환성"></p>
+<blockquote>
+  <p>서로 다른 두 트랜잭션이 호환성으로 인해 충돌할 경우, 선행 트랜잭션이 잠금해제할 때까지 대기합니다.
+각 트랜잭션이 서로 소유한 Lock에 대해 상호 대기할 경우, Deadlock이 발생합니다.</p>
+</blockquote>
+
+<h4 id="갭gap-락">
+<a class="anchor" href="#%EA%B0%ADgap-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>갭(GAP) 락</strong>
+</h4>
+<ul>
+  <li>레코드 사이의 일정 구간에 부여하는 Lock을 의미합니다.
+    <ul>
+      <li>(ex) <code class="language-plaintext highlighter-rouge">SELECT * FROM table WHERE a BETWEEN 5 and 10 FOR UPDATE</code>
+</li>
+      <li>위 예제와 같은 경우, 5~10 범위에 대해 Insert가 불가합니다. (기본 Isolation-level인 READ-REPEATABLE의 경우)</li>
+    </ul>
+  </li>
+  <li>
+<strong>READ-COMMITTED</strong> isolation-level에서는 갭락이 비활성화 됩니다.</li>
+  <li>해당 잠금이 할당된 구간에 Insert 되는 것을 방지합니다.</li>
+  <li>넥스트키 락의 일부로 자주 사용됩니다.</li>
+</ul>
+
+<h4 id="넥스트-키-락">
+<a class="anchor" href="#%EB%84%A5%EC%8A%A4%ED%8A%B8-%ED%82%A4-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>넥스트 키 락</strong>
+</h4>
+<ul>
+  <li>레코드 락 + 갭 락 형태의 잠금을 의미합니다.</li>
+  <li>해당 락은 binlog 기반으로 Replica 장비에서 실행될 때 데이터 일관성을 보장하기 위해 고안된 Lock입니다.</li>
+  <li>넥스트 키 락과 갭 락으로 인해, 데드락이 발생하거나 대기가 발생하는 경우가 있어, 최대한 줄이는 것이 좋습니다.</li>
+</ul>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 테스트 테이블 생성 * 데이터 Insert</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">A</span> <span class="nb">int</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span> <span class="n">b</span> <span class="nb">int</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span> <span class="k">c</span> <span class="nb">char</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="s1">'Y'</span><span class="p">,</span> <span class="k">INDEX</span> <span class="n">ix_b</span><span class="p">(</span><span class="n">b</span><span class="p">));</span>
 <span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">03</span> <span class="n">sec</span><span class="p">)</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_innodb</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="k">c</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">'N'</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s1">'S'</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="k">NULL</span><span class="p">),(</span><span class="mi">11</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">),</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="s1">'Y'</span><span class="p">),</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="s1">'N'</span><span class="p">);</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">6</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">Records</span><span class="p">:</span> <span class="mi">6</span>  <span class="n">Duplicates</span><span class="p">:</span> <span class="mi">0</span>  <span class="n">Warnings</span><span class="p">:</span> <span class="mi">0</span>
+
+<span class="c1">-- 데이터 확인</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">next_key</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">---+------+------+</span>
+<span class="o">|</span> <span class="n">A</span> <span class="o">|</span> <span class="n">b</span>    <span class="o">|</span> <span class="k">c</span>    <span class="o">|</span>
+<span class="o">+</span><span class="c1">---+------+------+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span> <span class="n">N</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span> <span class="o">|</span>    <span class="mi">4</span> <span class="o">|</span> <span class="n">S</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span>   <span class="mi">10</span> <span class="o">|</span> <span class="k">NULL</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">4</span> <span class="o">|</span>   <span class="mi">11</span> <span class="o">|</span> <span class="n">Y</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="mi">5</span> <span class="o">|</span>   <span class="mi">14</span> <span class="o">|</span> <span class="n">Y</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="mi">6</span> <span class="o">|</span>   <span class="mi">15</span> <span class="o">|</span> <span class="n">N</span>    <span class="o">|</span>
+<span class="o">+</span><span class="c1">---+------+------+</span>
+<span class="mi">6</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+
+
+<span class="c1">-- Session 1</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">START</span> <span class="n">TRANSACTION</span><span class="p">;</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">next_key</span> <span class="k">WHERE</span> <span class="n">b</span> <span class="k">BETWEEN</span> <span class="mi">5</span> <span class="k">AND</span> <span class="mi">13</span> <span class="k">FOR</span> <span class="k">UPDATE</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">---+------+------+</span>
+<span class="o">|</span> <span class="n">A</span> <span class="o">|</span> <span class="n">b</span>    <span class="o">|</span> <span class="k">c</span>    <span class="o">|</span>
+<span class="o">+</span><span class="c1">---+------+------+</span>
+<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span>   <span class="mi">10</span> <span class="o">|</span> <span class="k">NULL</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">4</span> <span class="o">|</span>   <span class="mi">11</span> <span class="o">|</span> <span class="n">Y</span>    <span class="o">|</span>
+<span class="o">+</span><span class="c1">---+------+------+</span>
+<span class="mi">2</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">03</span> <span class="n">sec</span><span class="p">)</span>
+
+
+<span class="c1">-- Session 2 (b 데이터 범위별 Insert 실행)</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">);</span>
 <span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">1</span> <span class="k">row</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
 
-<span class="c1">-- PK 중복 에러가 발생하도록, (1,2,3) Insert</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_myisam</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">ERROR</span> <span class="mi">1062</span> <span class="p">(</span><span class="mi">23000</span><span class="p">):</span> <span class="n">Duplicate</span> <span class="n">entry</span> <span class="s1">'3'</span> <span class="k">for</span> <span class="k">key</span> <span class="s1">'tab_myisam.PRIMARY'</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tab_innodb</span> <span class="p">(</span><span class="n">fdpk</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-<span class="n">ERROR</span> <span class="mi">1062</span> <span class="p">(</span><span class="mi">23000</span><span class="p">):</span> <span class="n">Duplicate</span> <span class="n">entry</span> <span class="s1">'3'</span> <span class="k">for</span> <span class="k">key</span> <span class="s1">'tab_innodb.PRIMARY'</span>
 
-<span class="c1">-- Insert 작업 실패 후, 테이블 데이터 확인</span>
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">tab_myisam</span><span class="p">;</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span> <span class="n">fdpk</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">2</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">3</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="mi">3</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+<span class="c1">-- 4 &lt;= b &lt; 14 Lock으로 인해 wait_timeout 발생</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">);</span>
+<span class="n">ERROR</span> <span class="mi">1205</span> <span class="p">(</span><span class="n">HY000</span><span class="p">):</span> <span class="k">Lock</span> <span class="n">wait</span> <span class="n">timeout</span> <span class="n">exceeded</span><span class="p">;</span> <span class="n">try</span> <span class="n">restarting</span> <span class="n">transaction</span>
 
-<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">tab_innodb</span><span class="p">;</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span> <span class="n">fdpk</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
-<span class="o">|</span>    <span class="mi">3</span> <span class="o">|</span>
-<span class="o">+</span><span class="c1">------+</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">);</span>
+<span class="n">ERROR</span> <span class="mi">1205</span> <span class="p">(</span><span class="n">HY000</span><span class="p">):</span> <span class="k">Lock</span> <span class="n">wait</span> <span class="n">timeout</span> <span class="n">exceeded</span><span class="p">;</span> <span class="n">try</span> <span class="n">restarting</span> <span class="n">transaction</span>
+
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">);</span>
+<span class="n">ERROR</span> <span class="mi">1205</span> <span class="p">(</span><span class="n">HY000</span><span class="p">):</span> <span class="k">Lock</span> <span class="n">wait</span> <span class="n">timeout</span> <span class="n">exceeded</span><span class="p">;</span> <span class="n">try</span> <span class="n">restarting</span> <span class="n">transaction</span>
+
+<span class="c1">-- b &lt; 4 / b &gt;=14 Lock의 영향을 받지 않고 Insert 성공</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">next_key</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="k">c</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">);</span>
+<span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">1</span> <span class="k">row</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="자동-증가-락">
+<a class="anchor" href="#%EC%9E%90%EB%8F%99-%EC%A6%9D%EA%B0%80-%EB%9D%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>자동 증가 락</strong>
+</h4>
+<ul>
+  <li>AUTO_INCREMENT 속성을 가진 컬럼에 대해 채번을 위해 사용하는 락입니다.</li>
+  <li>해당 Lock은 테이블 수준의 잠금이 사용됩니다.</li>
+  <li>
+    <p>Insert, Replace와 같이 새로운 값을 저장하는 쿼리에서만 사용됩니다.</p>
+  </li>
+  <li>
+<strong>관련 옵션</strong>
+    <ul>
+      <li>
+<code class="language-plaintext highlighter-rouge">innodb_autoinc_lock_mode=0</code>
+        <ul>
+          <li>모든 Insert문장에 자동 증가 락을 사용</li>
+        </ul>
+      </li>
+      <li>
+<code class="language-plaintext highlighter-rouge">innodb_autoinc_lock_mode=1</code> [<strong>5.7이하 기본값</strong>]
+        <ul>
+          <li>단순 Insert문 (INSERT INTO ~ VALUES)처럼 몇건이 Insert될지 예측이 되는 경우, 훨씬 가볍고 빠른 래치 (=mutex)를 이용해 처리합니다.</li>
+          <li>insert ~ select문과 같이 몇 건인지 알 수 없을 경우 자동 증가 락을 할당합니다.</li>
+          <li>대량 Insert가 발생할 때, 한번에 여러 개의 채번값을 할당하여 사용합니다.</li>
+          <li>사용되지 못할 경우, 버려지는데 이 경우 채번값이 연속적이지 않을 수 있습니다.</li>
+        </ul>
+      </li>
+      <li>
+<code class="language-plaintext highlighter-rouge">innodb_autoinc_lock_mode=2</code> [<strong>8.0이상 기본값</strong>]
+        <ul>
+          <li>자동 증가 락을 사용하지 않고, 항상 뮤텍스를 이용해 Insert 작업을 진행합니다.</li>
+          <li>대량 Insert문 진행 중에 다른 Insert가 가능합니다.</li>
+          <li>복제 구성된 환경에서는 결과 값이 달라질 수 있으므로 주의해야 됩니다.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- MySQL 8.0 기본값</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">show</span> <span class="k">global</span> <span class="n">variables</span> <span class="k">like</span> <span class="s1">'%autoinc_lock_mode%'</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">--------------------------+-------+</span>
+<span class="o">|</span> <span class="n">Variable_name</span>            <span class="o">|</span> <span class="n">Value</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">--------------------------+-------+</span>
+<span class="o">|</span> <span class="n">innodb_autoinc_lock_mode</span> <span class="o">|</span> <span class="mi">2</span>     <span class="o">|</span>
+<span class="o">+</span><span class="c1">--------------------------+-------+</span>
 <span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
 </code></pre></div></div>
+
+<h2 id="격리-수준isolation-level">
+<a class="anchor" href="#%EA%B2%A9%EB%A6%AC-%EC%88%98%EC%A4%80isolation-level" aria-hidden="true"><span class="octicon octicon-link"></span></a>격리 수준(Isolation-Level)</h2>
+<ul>
+  <li>여러 트랜잭션이 동시에 처리될 때, 특정 트랜잭션의 변경/조회 작업을 제어하는 방법입니다.</li>
+  <li>총 4개의 단계로 이루어져 있으며 단계가 높아질수록 동시성이 떨어집니다.
+    <ol>
+      <li><strong>READ UNCOMMITTED</strong></li>
+      <li><strong>READ COMMITTED</strong></li>
+      <li><strong>REPEATABLE READ</strong></li>
+      <li><strong>SERIALIZABLE</strong></li>
+    </ol>
+  </li>
+  <li>Isolation Level에 따라 부정합 현상이 발생할 수 있으며, 아래 표와 같습니다.
+<img src="/Martin-IT-Blog/images/isolationlevel.png" alt="" title="격리 수준에 따른 부정합 현상">
+    <blockquote>
+      <ul>
+        <li>dirty Read: Commit 되지 않은 데이터를 다른 트랜잭션이 조회 가능</li>
+        <li>Non Repeatable Read: 동일 트랜잭션 내에서 Select문의 결과가 다름</li>
+        <li>Phantom Read: 동일 트랜잭션에서 조회 시 없던 결과가 생김.</li>
+      </ul>
+    </blockquote>
+  </li>
+</ul>
+
+<h3 id="isolation-level에-따른-특징">
+<a class="anchor" href="#isolation-level%EC%97%90-%EB%94%B0%EB%A5%B8-%ED%8A%B9%EC%A7%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>Isolation Level에 따른 특징</h3>
+<ul>
+  <li>
+<strong>READ UNCOMMITTED</strong>
+    <ul>
+      <li>Commit 여부에 상관없이 다른 트랜잭션 결과를 그대로 조회합니다.</li>
+      <li>위에 설명한 세가지 부정합 현상이 모두 발생합니다.
+```sql
+– Session 1
+mysql&gt; SET SESSION transaction isolation level READ UNCOMMITTED;
+Query OK, 0 rows affected (0.00 sec)</li>
+    </ul>
+  </li>
+</ul>
+
+<p>mysql&gt; START TRANSACTION;
+Query OK, 0 rows affected (0.01 sec)</p>
+
+<p>mysql&gt; SELECT * FROM next_key;
++—+——+——+
+| A | b    | c    |
++—+——+——+
+| 1 |    1 | N    |
+| 2 |    4 | S    |
+| 3 |   10 | NULL |
+| 4 |   11 | Y    |
+| 5 |   14 | Y    |
++—+——+——+
+5 rows in set (0.01 sec)</p>
+
+<p>– Session 2
+START TRANSACTION;
+mysql&gt; START TRANSACTION;
+Query OK, 0 rows affected (0.01 sec)</p>
+
+<p>mysql&gt; DELETE FROM next_key WHERE A=5;
+Query OK, 1 row affected (0.03 sec)</p>
+
+<p>mysql&gt; INSERT next_key (b) VALUES (100);
+Query OK, 1 row affected (0.02 sec)</p>
+
+<p>– Session 1 (Commit 되지 않은 결과 확인) = Dirty Read
+mysql&gt; SELECT * FROM next_key;
++—-+——+——+
+| A  | b    | c    |
++—-+——+——+
+|  1 |    1 | N    |
+|  2 |    4 | S    |
+|  3 |   10 | NULL |
+|  4 |   11 | Y    |
+| 15 |  100 | Y    |
++—-+——+——+
+5 rows in set (0.03 sec)</p>
+
+<p>– Session 2 
+mysql&gt; ROLLBACK;
+Query OK, 0 rows affected (0.01 sec)</p>
+
+<p>– Session 1 (동일 트랜잭션 내 변경된 결과: Non-Repeatable Read / 이전에 없던 b=100 생성: Phantom-Read)
+mysql&gt; SELECT * FROM next_key;
++—+——+——+
+| A | b    | c    |
++—+——+——+
+| 1 |    1 | N    |
+| 2 |    4 | S    |
+| 3 |   10 | NULL |
+| 4 |   11 | Y    |
+| 5 |   14 | Y    |
++—+——+——+
+5 rows in set (0.01 sec)</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+- **READ COMMITTED**
+   - 각 명령문마다 Commit 트랜잭션 ID값을 사용해 레코드 버전 제어
+   - Non Repeatable Read 현상이 발생 (InnoDB에선 Phantom Read 미발생)
+   - 각 명령문마다 자기만의 스냅샷을 소유하여, 정합성을 유지할 수 있음.
+   - Lock이 발생하지 않음
+```sql
+-- Session 1
+mysql&gt; SET SESSION TRANSACTION isolation level READ COMMITTED;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql&gt; START TRANSACTION;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql&gt; SELECT * FROM next_key;
++---+------+------+
+| A | b    | c    |
++---+------+------+
+| 1 |    1 | N    |
+| 2 |    4 | S    |
+| 3 |   10 | NULL |
+| 4 |   11 | Y    |
+| 5 |   14 | Y    |
++---+------+------+
+5 rows in set (0.03 sec)
+
+
+-- Session 2
+mysql&gt; START TRANSACTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql&gt; DELETE FROM next_key WHERE A=5;
+Query OK, 1 row affected (0.02 sec)
+
+mysql&gt; INSERT next_key(B) VALUES (100);
+Query OK, 1 row affected (0.02 sec)
+
+-- Session 1 (동일한 결과 / Dirty Read 방지)
+mysql&gt; SELECT * FROM next_key;
++---+------+------+
+| A | b    | c    |
++---+------+------+
+| 1 |    1 | N    |
+| 2 |    4 | S    |
+| 3 |   10 | NULL |
+| 4 |   11 | Y    |
+| 5 |   14 | Y    |
++---+------+------+
+5 rows in set (0.02 sec)
+
+-- Session 2
+mysql&gt; COMMIT;
+
+-- Session 1 (동일 트랜잭션 내 변경된 결과: Non-Repeatable Read / 이전에 없던 b=100 생성: Phantom-Read)
+mysql&gt; SELECT * FROM next_key;
++----+------+------+
+| A  | b    | c    |
++----+------+------+
+|  1 |    1 | N    |
+|  2 |    4 | S    |
+|  3 |   10 | NULL |
+|  4 |   11 | Y    |
+| 16 |  100 | Y    |
++----+------+------+
+5 rows in set (0.02 sec)
+</code></pre></div></div>
+
+<ul>
+  <li>
+<strong>REPEATABLE READ</strong>
+    <ul>
+      <li>MySQL의 기본 isolation level입니다.</li>
+      <li>트랜잭션이 시작될 때 스냅샷을 생성하고, 언제나 동일한 결과셋을 읽도록 제어합니다.</li>
+      <li>동일 트랜잭션에서 내에서 같은 결과를 읽어와 Phantom READ를 방지하지만, 발생하는 예외 케이스가 존재합니다.
+        <ul>
+          <li>(ex) <code class="language-plaintext highlighter-rouge">SELECT ~ FOR UPDATE</code>와 같은 조회에 잠금 할당이 필요한 명령문</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+<strong>SERIALIZABLE</strong>
+    <ul>
+      <li>SELECT가 하나의 트랜잭션이며, 조회 시 S-Lock이 할당됩니다.</li>
+      <li>select문에 영향받는 object에 대해 DML, DDL 불가합니다.</li>
+      <li>가장 높은 격리 수준이며, 동시성이 제일 떨어집니다.</li>
+    </ul>
+  </li>
+</ul>
 
   </div><!-- from https://github.com/utterance/utterances
 <script src="https://utteranc.es/client.js"
