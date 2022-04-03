@@ -97,26 +97,7 @@ window.onload = wrap_img;
   <div class="post-content e-content" itemprop="articleBody">
     <div>
       <a href="#">&lt;맨 위로&gt;</a>
-      <!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
-<script>
-    $( document ).ready(function() {
-      // Handler for .ready() called.
-    
-    $('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
-    
-    /* this offset helps account for the space taken up by the floating toolbar. */
-    $('#toc').on('click', 'a', function() {
-      var target = $(this.getAttribute('href'))
-        , scroll_target = target.offset().top
-    
-      $(window).scrollTop(scroll_target - 10);
-      return false
-    })
-      
-    });
-</script>
-    
-<div id="toc"></div>
+      <ul><li><a href="#설치-방법">설치 방법</a></li></ul>
 
     </div>
     <p>Real MySQL 8.0을 공부하며 첫 단계인 MySQL 설치 방법에 대해 정리하려 합니다.
