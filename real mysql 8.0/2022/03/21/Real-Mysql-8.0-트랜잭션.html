@@ -97,7 +97,26 @@ window.onload = wrap_img;
   <div class="post-content e-content" itemprop="articleBody">
     <div>
       <a href="#">&lt;맨 위로&gt;</a>
-      <ul><li><a href="#트랜잭션이란">트랜잭션이란?</a><ul><li><a href="#트랜잭션의-특성">트랜잭션의 특성</a></li><li><a href="#트랜잭션-특성에-따른-결과-차이"><strong>트랜잭션 특성에 따른 결과 차이</strong></a></li></ul></li><li><a href="#잠금lock">잠금(Lock)</a><ul><li><a href="#잠금의-종류"><strong>잠금의 종류</strong></a><ul><li><a href="#글로벌-락"><strong>글로벌 락</strong></a></li><li><a href="#백업-락"><strong>백업 락</strong></a></li><li><a href="#테이블-락"><strong>테이블 락</strong></a></li><li><a href="#네임드-락"><strong>네임드 락</strong></a></li><li><a href="#메타데이터-락"><strong>메타데이터 락</strong></a></li><li><a href="#레코드-락"><strong>레코드 락</strong></a></li><li><a href="#갭gap-락"><strong>갭(GAP) 락</strong></a></li><li><a href="#넥스트-키-락"><strong>넥스트 키 락</strong></a></li><li><a href="#자동-증가-락"><strong>자동 증가 락</strong></a></li></ul></li></ul></li><li><a href="#격리-수준isolation-level">격리 수준(Isolation-Level)</a><ul><li><a href="#isolation-level에-따른-특징">Isolation Level에 따른 특징</a></li></ul></li></ul>
+      <!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+    $( document ).ready(function() {
+      // Handler for .ready() called.
+    
+    $('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+    
+    /* this offset helps account for the space taken up by the floating toolbar. */
+    $('#toc').on('click', 'a', function() {
+      var target = $(this.getAttribute('href'))
+        , scroll_target = target.offset().top
+    
+      $(window).scrollTop(scroll_target - 10);
+      return false
+    })
+      
+    });
+</script>
+    
+<div id="toc"></div>
 
     </div>
     <h2 id="트랜잭션이란">트랜잭션이란?</h2>

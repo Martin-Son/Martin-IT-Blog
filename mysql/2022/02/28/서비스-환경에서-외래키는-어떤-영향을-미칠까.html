@@ -97,7 +97,26 @@ window.onload = wrap_img;
   <div class="post-content e-content" itemprop="articleBody">
     <div>
       <a href="#">&lt;맨 위로&gt;</a>
-      <ul><li><a href="#외래키-foreign-key란">외래키 (Foreign Key)란?</a></li><li><a href="#외래키의-특징">외래키의 특징</a></li><li><a href="#외래키의-성능">외래키의 성능</a></li></ul>
+      <!-- this handles the automatic toc. use ## for subheads to auto-generate the on-page minitoc. if you use html tags, you must supply an ID for the heading element in order for it to appear in the minitoc. -->
+<script>
+    $( document ).ready(function() {
+      // Handler for .ready() called.
+    
+    $('#toc').toc({ minimumHeaders: 0, listType: 'ul', showSpeed: 0, headers: 'h2,h3,h4' });
+    
+    /* this offset helps account for the space taken up by the floating toolbar. */
+    $('#toc').on('click', 'a', function() {
+      var target = $(this.getAttribute('href'))
+        , scroll_target = target.offset().top
+    
+      $(window).scrollTop(scroll_target - 10);
+      return false
+    })
+      
+    });
+</script>
+    
+<div id="toc"></div>
 
     </div>
     <h2 id="외래키-foreign-key란">외래키 (Foreign Key)란?</h2>
