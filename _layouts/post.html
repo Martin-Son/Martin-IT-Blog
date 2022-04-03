@@ -60,7 +60,7 @@ layout: default
   {% include toc.html html=content %}
   
   <div class="post-content e-content" itemprop="articleBody">    
-    {{ content }}
+    {{ content | toc }}
   </div>
   {%- if page.comments -%}
     {%- include utterances.html -%}
