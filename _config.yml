@@ -15,8 +15,8 @@ github_repo: "Martin-IT-Blog"
 # OPTIONAL: override baseurl and url if using a custom domain
 # Note: leave out the trailing / from this value.
 url: "https://Martin-Son.github.io" # the base hostname & protocol for your site, e.g. http://example.com
-logo: "/images/Curios_Cat.jpeg"
-cover: interstella_cat.webp
+#logo: "/images/Curios_Cat.jpeg"
+#cover: interstella_cat.webp
 ###########################################################
 #########  Special Instructions for baseurl ###############
 #
