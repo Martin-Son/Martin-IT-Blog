@@ -100,13 +100,19 @@ window.onload = wrap_img;
 
   
   <div class="post-content e-content" itemprop="articleBody">    
-    <h2 id="외래키-foreign-key란">외래키 (Foreign Key)란?</h2>
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#외래키-foreign-key란">외래키 (Foreign Key)란?</a></li>
+<li class="toc-entry toc-h2"><a href="#외래키의-특징">외래키의 특징</a></li>
+<li class="toc-entry toc-h2"><a href="#외래키의-성능">외래키의 성능</a></li>
+</ul><h2 id="외래키-foreign-key란">
+<a class="anchor" href="#%EC%99%B8%EB%9E%98%ED%82%A4-foreign-key%EB%9E%80" aria-hidden="true"><span class="octicon octicon-link"></span></a>외래키 (Foreign Key)란?</h2>
 <p>외래키는 MySQL에서 기본 엔진으로 사용되는 InnoDB 스토리지 엔진에서만 사용 가능한 제약조건입니다.
 외래키는 서로 다른 테이블 간 부모-자식 관계를 정의하여, 데이터 변경이 발생하면 정의한 제약조건에 따라
 함께 영향을 받는 특징을 가지고 있습니다.
 또한, 부모-자식 관계로 정의된 컬럼에 대해 자동으로 인덱스가 생성됩니다.</p>
 
-<h2 id="외래키의-특징">외래키의 특징</h2>
+<h2 id="외래키의-특징">
+<a class="anchor" href="#%EC%99%B8%EB%9E%98%ED%82%A4%EC%9D%98-%ED%8A%B9%EC%A7%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>외래키의 특징</h2>
 <p>데이터베이스에서 DML을 통해 데이터 변경이 발생하면, Lock을 소유하게 됩니다.
 일반적으로 <strong>외래키 제약조건이 없는</strong> 테이블이라면, 다른 테이블에 대한 DML에 대해서는 Lock으로 인해 대기하지 않습니다.</p>
 
@@ -215,7 +221,8 @@ window.onload = wrap_img;
   </tbody>
 </table>
 
-<h2 id="외래키의-성능">외래키의 성능</h2>
+<h2 id="외래키의-성능">
+<a class="anchor" href="#%EC%99%B8%EB%9E%98%ED%82%A4%EC%9D%98-%EC%84%B1%EB%8A%A5" aria-hidden="true"><span class="octicon octicon-link"></span></a>외래키의 성능</h2>
 
 <p>위의 테스트 결과에서 확인할 수 있듯이, 외래키 제약 조건이 있으면 Lock을 통해 제약 조건을 만족할 수 있도록 제어합니다.
 외래키에 대한 DML이 다량으로 발생하게 되면 그만큼 확인 작업도 증가하게 될테니 성능에 어떤 영향을 주는지 의문이 들었습니다.</p>
@@ -264,8 +271,10 @@ index_updates <span class="o">=</span> <span class="o">{</span>
 <p>위와 같이 수정 후, 아래 스크립트문을 준비하여 동시 실행 스레드 수별 성능 차이를 테스트해봅니다.
 테스트는 아래와 같은 MySQL 환경에서 진행했습니다.</p>
 <ul>
-  <li><strong>버전</strong>: 5.7.mysql_aurora.2.09.2</li>
-  <li><strong>인스턴스 스펙</strong>: db.r6g.xlarge</li>
+  <li>
+<strong>버전</strong>: 5.7.mysql_aurora.2.09.2</li>
+  <li>
+<strong>인스턴스 스펙</strong>: db.r6g.xlarge</li>
 </ul>
 
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># $ vi test.sh</span>
@@ -291,7 +300,7 @@ index_updates <span class="o">=</span> <span class="o">{</span>
 <p>sysbench를 이용하여, 외래키 관계에 있는 컬럼에 대한 update를 실행하도록 조절했습니다.
 그에 대한 성능 결과는 아래와 같습니다.</p>
 
-<p><img src="/Martin-IT-Blog/images/foreign_key_perf.png" alt="" title="외래키 유무에 따른 성능 차이 비교 " /></p>
+<p><img src="/Martin-IT-Blog/images/foreign_key_perf.png" alt="" title="외래키 유무에 따른 성능 차이 비교 "></p>
 
 <p>병렬 스레드 갯수와 무관하게, 전체적으로 외래키 제약조건이 존재할 경우, QPS는 감소하고 Latency는 증가하는 현상을 확인할 수 있습니다.
 DBA로서 외래키 제약조건을 여러 이유로 최대한 지양 (성능 저하, DDL/DML시 관리포인트 증가)해야 하는 사실은 인지했지만,

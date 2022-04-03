@@ -100,14 +100,19 @@ window.onload = wrap_img;
 
   
   <div class="post-content e-content" itemprop="articleBody">    
-    <p>Real MySQL 8.0을 공부하며 첫 단계인 MySQL 설치 방법에 대해 정리하려 합니다.
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h1"><a href="#설치-방법">설치 방법</a></li>
+</ul><p>Real MySQL 8.0을 공부하며 첫 단계인 MySQL 설치 방법에 대해 정리하려 합니다.
 책에서는 간단하게 UI를 통해 설치하는 방법에 대해 자세히 나와 있어 
 Linux환경에서 커뮤니티 버전을 Binary 파일을 이용하여 설치하는 방법에 대해 정리했습니다.</p>
 
-<h1 id="설치-방법">설치 방법</h1>
+<h1 id="설치-방법">
+<a class="anchor" href="#%EC%84%A4%EC%B9%98-%EB%B0%A9%EB%B2%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>설치 방법</h1>
 <ol>
-  <li><strong>Binary 설치 파일 다운로드</strong>
-    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 다운로드 할 경로에 접근</span>
+  <li>
+<strong>Binary 설치 파일 다운로드</strong>
+    <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c"># 다운로드 할 경로에 접근</span>
 <span class="nv">$ </span><span class="nb">cd</span> /usr/local
 <span class="c"># binary 파일 다운로드 (8.0.21 버전)</span>
 <span class="nv">$ </span>wget https://downloads.mysql.com/archives/get/p/23/file/mysql-8.0.21-linux-glibc2.12-x86_64.tar.xz
@@ -116,8 +121,10 @@ Linux환경에서 커뮤니티 버전을 Binary 파일을 이용하여 설치하
 <span class="nt">-rw-r--r--</span> 1 root root 347814208 Jun 17  2020 mysql-8.0.21-linux-glibc2.12-x86_64.tar.xz
 </code></pre></div>    </div>
   </li>
-  <li><strong>압축 해제 및 보안을 위한 OS 계정, 그룹 추가</strong>
-    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># tar 명령어를 사용하여 압축해제</span>
+  <li>
+<strong>압축 해제 및 보안을 위한 OS 계정, 그룹 추가</strong>
+    <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c"># tar 명령어를 사용하여 압축해제</span>
 <span class="nv">$ </span><span class="nb">tar</span> <span class="nt">-xvf</span> mysql-8.0.21-linux-glibc2.12-x86_64.tar.xz
 <span class="c"># mysql 그룹 &amp; USER 그룹 추가</span>
 <span class="nv">$ </span>groupadd mysql
@@ -131,8 +138,10 @@ Linux환경에서 커뮤니티 버전을 Binary 파일을 이용하여 설치하
 <span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-s</span> mysql-8.0.21-linux-glibc2.12-x86_64 mysql
 </code></pre></div>    </div>
   </li>
-  <li><strong>MySQL 서버 디렉토리 경로 설정 (Config 정리)</strong>
-    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">## config 파일 생성</span>
+  <li>
+<strong>MySQL 서버 디렉토리 경로 설정 (Config 정리)</strong>
+    <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c">## config 파일 생성</span>
 <span class="nv">$ </span>vi /etc/my.cnf
 <span class="o">[</span>mysqld]
 <span class="nv">user</span><span class="o">=</span>mysql
@@ -157,8 +166,10 @@ pid-file<span class="o">=</span>/mysql_data/mysql.pid
 <span class="o">!</span>includedir /etc/my.cnf.d
 </code></pre></div>    </div>
   </li>
-  <li><strong>Config 경로 생성</strong>
-    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Data 디렉토리 (/data/mysql)</span>
+  <li>
+<strong>Config 경로 생성</strong>
+    <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c"># Data 디렉토리 (/data/mysql)</span>
 <span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> /data/mysql
 <span class="nv">$ </span><span class="nb">chown</span> <span class="nt">-R</span> mysql.mysql /data 
 <span class="c"># pid 디렉토리 (/mysql_data)</span>
@@ -169,8 +180,10 @@ pid-file<span class="o">=</span>/mysql_data/mysql.pid
 <span class="nv">$ </span><span class="nb">chown</span> <span class="nt">-R</span> mysql:mysql /bin_log
 </code></pre></div>    </div>
   </li>
-  <li><strong>MySQL 설치 &amp; 기동</strong>
-    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#설치파일 경로 접속</span>
+  <li>
+<strong>MySQL 설치 &amp; 기동</strong>
+    <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c">#설치파일 경로 접속</span>
 <span class="nv">$ </span><span class="nb">cd</span> /usr/local/mysql
 <span class="c">#Mysql Install (Config 파일 미세팅 시, 경로 지정 옵션 필요)</span>
 <span class="nv">$ </span>/usr/local/mysql/bin/mysqld <span class="nt">--initialize-insecure</span>
@@ -184,8 +197,10 @@ pid-file<span class="o">=</span>/mysql_data/mysql.pid
       </ul>
     </blockquote>
   </li>
-  <li><strong>MySQL 명령어 설정 &amp; 접속</strong>
-    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Mysql 명령어를 Location 관계없이 사용할 수 있도록 설정</span>
+  <li>
+<strong>MySQL 명령어 설정 &amp; 접속</strong>
+    <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c"># Mysql 명령어를 Location 관계없이 사용할 수 있도록 설정</span>
 <span class="nv">$ </span><span class="nb">sudo </span>vi /etc/profile
 <span class="c"># 맨 하단으로 이동하여 아래 내용 추가</span>
 <span class="nb">export </span><span class="nv">DB_HOME</span><span class="o">=</span>/usr/local/mysql
@@ -200,7 +215,8 @@ mysql <span class="nt">-uroot</span>
       <ol>
         <li>error while loading shared libraries: libncurses.so.5</li>
         <li>error while loading shared libraries: libtinfo.so.5
-          <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 에러메시지에 출력된 파일 형식과 다른 버전이 있는지 탐색</span>
+          <div class="language-shell highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c"># 에러메시지에 출력된 파일 형식과 다른 버전이 있는지 탐색</span>
 <span class="nv">$ </span><span class="nb">cd</span> /
 <span class="nv">$ </span>find | <span class="nb">grep </span>libtinfo
 <span class="c"># Soft Link를 통해 해당 에러메시지 파일 대신 결과로 도출된 파일 바라보도록 설정</span>
@@ -212,8 +228,10 @@ mysql <span class="nt">-uroot</span>
       </ol>
     </blockquote>
   </li>
-  <li><strong>root 비밀번호 설정</strong>
-    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">'root'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">'[비밀번호]'</span><span class="p">;</span>
+  <li>
+<strong>root 비밀번호 설정</strong>
+    <div class="language-sql highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">'root'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">'[비밀번호]'</span><span class="p">;</span>
 <span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
 </code></pre></div>    </div>
     <p>​</p>
