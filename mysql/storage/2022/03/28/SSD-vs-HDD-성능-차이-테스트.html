@@ -109,8 +109,7 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h4"><a href="#디ㅌ크-타입별-mysql-임시테이블-insert-성능-비교">디ㅌ크 타입별 mysql 임시테이블 Insert 성능 비교</a></li>
 </ul>
 </li>
-</ul><body>
-<h2 id="디스크-타입에-따른-성능">
+</ul><h2 id="디스크-타입에-따른-성능">
 <a class="anchor" href="#%EB%94%94%EC%8A%A4%ED%81%AC-%ED%83%80%EC%9E%85%EC%97%90-%EB%94%B0%EB%A5%B8-%EC%84%B1%EB%8A%A5" aria-hidden="true"><span class="octicon octicon-link"></span></a>디스크 타입에 따른 성능</h2>
 <p>EBS (=Elastic Block Store)는 저장 매체로 크게 두가지 종류로 나뉘고 아래와 같이 세분화된 종류로 나뉩니다.</p>
 
@@ -247,32 +246,8 @@ mysql <span class="nt">-umaster</span> <span class="nt">-p</span><span class="o"
 <span class="k">done</span>
 </code></pre></div></div>
 
-<p>위 스크립트를 실행하여 얻은 결과를 그래프로 비교한 결과는 아래와 같습니다.</p>
-
-
-
-<style type="text/css">
-.imgScrollBox {
-  overflow:scroll;
-  width:70%; padding-bottom:20px;
-  border-style:none;
-
-  scrollbar-face-color:#FFFFFF;
-  scrollbar-3dlight-color:#FFFFFF;
-  scrollbar-highlight-color:#FFFFFF;
-  scrollbar-shadow-color:#000000;
-  scrollbar-darkshadow-color:#FFFFFF;
-  scrollbar-arrow-color:#000000;
-  scrollbar-track-color:#FFFFFF; }
-</style>
-
-
-
-<div class="imgScrollBox"><a href="disk_insert_perf.png"><img src="/images/disk_insert_perf.png" alt="디스크 타입별 mysql 임시테이블 성능 비교"></a></div>
-
-
-
-<p><img src="/Martin-IT-Blog/images/disk_insert_perf.png" alt="" title="디스크 타입별 mysql 임시테이블 성능 비교"></p>
+<p>위 스크립트를 실행하여 얻은 결과를 그래프로 비교한 결과는 아래와 같습니다.
+<img src="/Martin-IT-Blog/images/disk_insert_perf.png" alt="" title="디스크 타입별 mysql 임시테이블 성능 비교"></p>
 
 <p>두 가지 테스트를 통해 아래와 같은 사실을 확인할 수 있었습니다.</p>
 
@@ -281,7 +256,7 @@ mysql <span class="nt">-umaster</span> <span class="nt">-p</span><span class="o"
   <li>File I/O 차이만큼 디스크 I/O로 인한 Sorting 쿼리 성능 차이가 나진 않았지만,  (1.6배) 병렬 세션 수에 비례해서 성능차이가 증가.</li>
   <li><strong>SSD 성능 &gt; HDD 성능</strong></li>
 </ol>
-</body>
+
   </div><!-- from https://github.com/utterance/utterances
 <script src="https://utteranc.es/client.js"
         repo="Martin-Son/Martin-IT-Blog"
