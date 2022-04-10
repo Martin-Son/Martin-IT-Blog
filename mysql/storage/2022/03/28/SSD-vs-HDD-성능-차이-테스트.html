@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>SSD vs HDD 성능 차이 테스트 | Martin’s Study Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="SSD vs HDD 성능 차이 테스트" />
+<meta name="author" content="Martin.S" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="디스크 타입에 따른 성능 EBS (=Elastic Block Store)는 저장 매체로 크게 두가지 종류로 나뉘고 아래와 같이 세분화된 종류로 나뉩니다." />
+<meta property="og:description" content="디스크 타입에 따른 성능 EBS (=Elastic Block Store)는 저장 매체로 크게 두가지 종류로 나뉘고 아래와 같이 세분화된 종류로 나뉩니다." />
+<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/mysql/storage/2022/03/28/SSD-vs-HDD-%EC%84%B1%EB%8A%A5-%EC%B0%A8%EC%9D%B4-%ED%85%8C%EC%8A%A4%ED%8A%B8.html" />
+<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/mysql/storage/2022/03/28/SSD-vs-HDD-%EC%84%B1%EB%8A%A5-%EC%B0%A8%EC%9D%B4-%ED%85%8C%EC%8A%A4%ED%8A%B8.html" />
+<meta property="og:site_name" content="Martin’s Study Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-03-28T18:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="SSD vs HDD 성능 차이 테스트" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-03-28T18:00:00-05:00","datePublished":"2022-03-28T18:00:00-05:00","description":"디스크 타입에 따른 성능 EBS (=Elastic Block Store)는 저장 매체로 크게 두가지 종류로 나뉘고 아래와 같이 세분화된 종류로 나뉩니다.","headline":"SSD vs HDD 성능 차이 테스트","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/mysql/storage/2022/03/28/SSD-vs-HDD-%EC%84%B1%EB%8A%A5-%EC%B0%A8%EC%9D%B4-%ED%85%8C%EC%8A%A4%ED%8A%B8.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/mysql/storage/2022/03/28/SSD-vs-HDD-%EC%84%B1%EB%8A%A5-%EC%B0%A8%EC%9D%B4-%ED%85%8C%EC%8A%A4%ED%8A%B8.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/Martin-IT-Blog/">Martin&#39;s Study Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/Martin-IT-Blog/about/">About Me</a><a class="page-link" href="/Martin-IT-Blog/gitInfo/">gitInfo</a><a class="page-link" href="/Martin-IT-Blog/search/">Search</a><a class="page-link" href="/Martin-IT-Blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">SSD vs HDD 성능 차이 테스트</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-03-28T18:00:00-05:00" itemprop="datePublished">
+        Mar 28, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Martin.S</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      3 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#mysql">mysql</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Storage">Storage</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  
+  <div class="post-content e-content" itemprop="articleBody">    
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#디스크-타입에-따른-성능">디스크 타입에 따른 성능</a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#sysbench를-이용한-file-io-성능-비교">sysbench를 이용한 File I/O 성능 비교</a></li>
+<li class="toc-entry toc-h4"><a href="#디ㅌ크-타입별-mysql-임시테이블-insert-성능-비교">디ㅌ크 타입별 mysql 임시테이블 Insert 성능 비교</a></li>
+</ul>
+</li>
+</ul><h2 id="디스크-타입에-따른-성능">
+<a class="anchor" href="#%EB%94%94%EC%8A%A4%ED%81%AC-%ED%83%80%EC%9E%85%EC%97%90-%EB%94%B0%EB%A5%B8-%EC%84%B1%EB%8A%A5" aria-hidden="true"><span class="octicon octicon-link"></span></a>디스크 타입에 따른 성능</h2>
+<p>EBS (=Elastic Block Store)는 저장 매체로 크게 두가지 종류로 나뉘고 아래와 같이 세분화된 종류로 나뉩니다.</p>
+
+<p><img src="/Martin-IT-Blog/images/EBS_Performance.png" alt="" title="EBS 타입별 성능"></p>
+
+<p>위의 표에서 분명한 차이를 확인하기 위해, HDD중 성능이 가장 낮은 sc1(=Cold HDD)와 SSD중 성능이 제일 좋은 gp3(=SSD)
+장비에 sysbench 툴을 이용한 성능 비교를 진행했습니다.</p>
+
+<h4 id="sysbench를-이용한-file-io-성능-비교">
+<a class="anchor" href="#sysbench%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-file-io-%EC%84%B1%EB%8A%A5-%EB%B9%84%EA%B5%90" aria-hidden="true"><span class="octicon octicon-link"></span></a>sysbench를 이용한 File I/O 성능 비교</h4>
+
+<p>성능 비교 환경 구성을 위해 두 가지 EBS(HDD, SSD)를 추가 후 마운트합니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">## 마운트할 디스크 확인.</span>
+<span class="nv">$ </span>lsblk <span class="nt">-f</span>
+NAME    FSTYPE LABEL UUID                                 MOUNTPOINT
+xvda
+└─xvda1 xfs    /     518d317e-9b1a-43aa-8b7c-850dd3510341 /
+xvdf    xfs          7ab58089-47e5-4667-b68c-45a6f3d2262f
+xvdg    xfs          c49943b6-68ba-47d5-ad57-ba56a6852ef2
+xvdh    xfs          60a2fae0-05d5-4690-96d4-10b9f8784543
+ 
+ 
+<span class="c">## 디스크 Mount</span>
+<span class="nv">$ </span><span class="nb">sudo </span>mount dev/xvdg /tmp_hdd
+<span class="nv">$ </span><span class="nb">sudo </span>mount dev/xvdh /tmp_ssd_gp3
+ 
+<span class="c">## Mount 확인</span>
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        2.0G     0  2.0G   0% /dev
+tmpfs           2.0G     0  2.0G   0% /dev/shm
+tmpfs           2.0G  428K  2.0G   1% /run
+tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/xvda1       32G   17G   16G  51% /
+tmpfs           395M     0  395M   0% /run/user/1001
+/dev/xvdg       300G  339M  300G   1% /tmp_hdd
+/dev/xvdh       300G  339M  300G   1% /tmp_ssd_gp3
+</code></pre></div></div>
+
+<p>이후 디스크별 File I/O 테스트를 진행하기 위해, sysbench 파일을 복사합니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">## sysbench 파일 복사</span>
+<span class="nv">$ </span><span class="nb">cp</span> <span class="nt">-R</span> /usr/share/sysbench /tmp_ssd_gp3/
+<span class="nv">$ </span><span class="nb">cp</span> <span class="nt">-R</span> /usr/share/sysbench /tmp_hdd/
+
+<span class="c"># 각 디스크에서 File I/O 테스트 환경 구축</span>
+<span class="nv">$ </span>sysbench <span class="nt">--test</span><span class="o">=</span>fileio <span class="nt">--file-total-size</span><span class="o">=</span>8G prepare
+ 
+<span class="nt">-rw-------</span> 1 root root 67108864 Aug  3 05:07 test_file.57
+<span class="nt">-rw-------</span> 1 root root 67108864 Aug  3 05:07 test_file.58
+<span class="nt">-rw-------</span> 1 root root 67108864 Aug  3 05:07 test_file.59
+<span class="nt">-rw-------</span> 1 root root 67108864 Aug  2 09:25 test_file.6
+<span class="nt">-rw-------</span> 1 root root 67108864 Aug  3 05:07 test_file.60
+
+<span class="c"># 각 디스크에서 file I/O 테스트 실행</span>
+<span class="nv">$ </span>sysbench fileio <span class="nt">--file-total-size</span><span class="o">=</span>8G <span class="nt">--file-test-mode</span><span class="o">=</span>rndrw  <span class="nt">--max-time</span><span class="o">=</span>30 <span class="nt">--report-interval</span><span class="o">=</span>1
+</code></pre></div></div>
+
+<p>file-test-mode=rndrw 옵션을 사용해, Random I/O (읽기, 쓰기) 성능 차이를 비교한 결과는 아래와 같습니다.
+<img src="/Martin-IT-Blog/images/EBS_Perf_vs.png" alt="" title="EBS Read Write 성능 비교"></p>
+
+<h4 id="디ㅌ크-타입별-mysql-임시테이블-insert-성능-비교">
+<a class="anchor" href="#%EB%94%94%E3%85%8C%ED%81%AC-%ED%83%80%EC%9E%85%EB%B3%84-mysql-%EC%9E%84%EC%8B%9C%ED%85%8C%EC%9D%B4%EB%B8%94-insert-%EC%84%B1%EB%8A%A5-%EB%B9%84%EA%B5%90" aria-hidden="true"><span class="octicon octicon-link"></span></a>디ㅌ크 타입별 mysql 임시테이블 Insert 성능 비교</h4>
+
+<p>위 테스트는 sysbench 툴을 이용하여 간접적으로 성능 차이를 확인했습니다. 실제 mysql을 사용하면서 디스크 타입에 따라 성능 차이가
+어떻게 나는지 확인하기 위해 임시테이블에 단건 Insert 1000만 건 하는 SP를 생성하여,
+완료 시간 기준으로 성능을 비교해봤습니다.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 소요시간 기록 테이블 생성</span>
+ 
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="nv">`time_table`</span> <span class="p">(</span>
+  <span class="nv">`duration_sec`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="nv">`cnt`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span> <span class="k">COLLATE</span><span class="o">=</span><span class="n">utf8mb4_unicode_ci</span><span class="p">;</span>
+ 
+<span class="c1">-- SP 스크립트</span>
+<span class="k">CREATE</span>
+    <span class="k">DEFINER</span> <span class="o">=</span> <span class="nv">`root`</span><span class="o">@</span><span class="nv">`%`</span> <span class="k">PROCEDURE</span> <span class="nv">`diskio_test`</span><span class="p">()</span>
+<span class="k">BEGIN</span>
+    <span class="k">DECLARE</span> <span class="n">cnt</span> <span class="nb">int</span> <span class="k">DEFAULT</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">DECLARE</span> <span class="n">begin_time</span> <span class="nb">datetime</span><span class="p">;</span>
+    <span class="k">DECLARE</span> <span class="n">end_time</span> <span class="nb">datetime</span><span class="p">;</span>
+ 
+    <span class="c1">-- MyISAM 임시테이블 (디스크 directory 사용) 생성</span>
+    <span class="c1">-- Engine=MyISAM 명시하지 않을 시 InnoDB 엔진을 사용하며, ibtmp1 (데이터파일 위치)에 생성되어 디스크 성능 테스트 실패</span>
+ 
+    <span class="k">CREATE</span> <span class="k">TEMPORARY</span> <span class="k">TABLE</span> <span class="n">disk_tmp</span>
+    <span class="p">(</span>
+        <span class="n">id</span>       <span class="nb">int</span> <span class="n">AUTO_INCREMENT</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+        <span class="n">calendar</span> <span class="nb">date</span><span class="p">,</span>
+        <span class="n">num</span>      <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_2</span>    <span class="nb">int</span><span class="p">,</span>
+        <span class="k">Index</span> <span class="n">idx_calendar</span> <span class="p">(</span><span class="n">Calendar</span><span class="p">),</span>
+        <span class="k">index</span> <span class="n">idx_num</span> <span class="p">(</span><span class="n">num</span><span class="p">)</span>
+    <span class="p">)</span> <span class="n">ENGINE</span> <span class="o">=</span> <span class="n">MyISAM</span><span class="p">;</span>
+ 
+    <span class="k">SELECT</span> <span class="n">NOW</span><span class="p">()</span> <span class="k">INTO</span> <span class="n">begin_time</span><span class="p">;</span>
+       <span class="n">WHILE</span> <span class="p">(</span><span class="n">cnt</span> <span class="o">&lt;=</span> <span class="mi">10000000</span><span class="p">)</span>  <span class="c1">-- 단건 Insert 1000만 건.</span>
+        <span class="k">DO</span>
+               <span class="k">INSERT</span> <span class="n">disk_tmp</span><span class="p">(</span><span class="n">calendar</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">num_2</span><span class="p">)</span>
+               <span class="k">VALUES</span><span class="p">((</span><span class="k">CURRENT_DATE</span> <span class="o">-</span> <span class="n">INTERVAL</span> <span class="n">FLOOR</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span> <span class="o">*</span> <span class="mi">14</span><span class="p">)</span> <span class="k">DAY</span><span class="p">),</span>
+                       <span class="k">cast</span><span class="p">(</span><span class="n">rand</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span> <span class="k">as</span> <span class="nb">unsigned</span><span class="p">),</span> <span class="k">cast</span><span class="p">(</span><span class="n">rand</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span> <span class="k">as</span> <span class="nb">unsigned</span><span class="p">))</span>
+                <span class="p">;</span>
+            <span class="k">SET</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">cnt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+ 
+        <span class="k">end</span> <span class="n">while</span><span class="p">;</span>
+     <span class="k">SELECT</span> <span class="n">NOW</span><span class="p">()</span> <span class="k">INTO</span> <span class="n">end_time</span><span class="p">;</span>
+ 
+            <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">time_table</span>
+            <span class="k">SELECT</span> <span class="n">TIMESTAMPDIFF</span><span class="p">(</span><span class="k">SECOND</span><span class="p">,</span> <span class="n">begin_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">),</span> <span class="n">cnt</span><span class="p">;</span>
+    <span class="k">DROP</span> <span class="k">TEMPORARY</span> <span class="k">TABLE</span> <span class="n">disk_tmp</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+
+
+<span class="k">call</span> <span class="n">diskio_test</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>위 SP를 만든 후, 실제 운영환경과 같이 병렬로 Insert가 발생하는 환경을 재현하기 위해
+백그라운드 프로세스로 위 SP를 10개 세션에서 병렬로 실행했습니다</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>vi sp_insert.sh
+<span class="c"># sp 실행 구문</span>
+mysql <span class="nt">-umaster</span> <span class="nt">-p</span><span class="o">[</span>비밀번호ㅑi <span class="nt">-h</span><span class="o">[</span>호스트] <span class="nt">-P</span><span class="o">[</span>포트] <span class="nt">-e</span><span class="s2">"call test.diskio_test();"</span>
+</code></pre></div></div>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>vi disk_io.sh
+<span class="c"># 병렬 sp 실행</span>
+<span class="k">for</span> <span class="o">((</span><span class="nv">i</span><span class="o">=</span>0<span class="p">;</span> i&lt;10<span class="p">;</span> i++<span class="o">))</span><span class="p">;</span> <span class="k">do
+
+</span><span class="nb">nohup </span>sh sp_insert.sh &amp;
+
+<span class="nb">sleep </span>1
+<span class="k">done</span>
+</code></pre></div></div>
+
+<p>위 스크립트를 실행하여 얻은 결과를 그래프로 비교한 결과는 아래와 같습니다.</p>
+
+<p><img src="/Martin-IT-Blog/images/disk_insert_perf.png" alt="" title="디스크 타입별 mysql 임시테이블 성능 비교"></p>
+
+<p>두 가지 테스트를 통해 아래와 같은 사실을 확인할 수 있었습니다.</p>
+
+<ol>
+  <li>SSD (gp3) vs Cold HDD 8GB 기준 File I/O 성능 비교 시, 약 45배 정도의 성능 차이가 발생.</li>
+  <li>File I/O 차이만큼 디스크 I/O로 인한 Sorting 쿼리 성능 차이가 나진 않았지만,  (1.6배) 병렬 세션 수에 비례해서 성능차이가 증가.</li>
+  <li><strong>SSD 성능 &gt; HDD 성능</strong></li>
+</ol>
+
+  </div><!-- from https://github.com/utterance/utterances
+<script src="https://utteranc.es/client.js"
+        repo="Martin-Son/Martin-IT-Blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>  -->
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://martin-it-study-blog.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a class="u-url" href="/Martin-IT-Blog/mysql/storage/2022/03/28/SSD-vs-HDD-%EC%84%B1%EB%8A%A5-%EC%B0%A8%EC%9D%B4-%ED%85%8C%EC%8A%A4%ED%8A%B8.html" hidden></a>
+</article>
+
+<script>
+  function getTOCNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var tocNodes = nodes.filter(function(elem) {
+        return elem.tagName == "A";
+    });
+    return tocNodes;
+  }
+  function getHeaderNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var headerNodes = nodes.filter(function(elem) {
+        return elem.tagName == "H1" || elem.tagName == "H2" || elem.tagName == "H3" || elem.tagName == "H4" || elem.tagName == "H5" || elem.tagName == "H6";
+    });
+    return headerNodes;
+  }
+
+  var title = document.getElementsByClassName("post-title")[0];
+  var titleY = window.pageYOffset + title.getBoundingClientRect().top;
+  
+  var article = document.getElementsByClassName("post-article")[0];
+  var articleY = window.pageYOffset + article.getBoundingClientRect().top;
+
+  var toc = document.getElementsByClassName("toc")[0];
+
+  var headerNodes = getHeaderNodes(article);
+  var tocNodes = getTOCNodes(toc);
+
+  var before = undefined;
+
+  document.addEventListener('scroll', function(e) {
+    if (window.scrollY >= articleY-60) {
+      toc.style.cssText = "position: fixed; top: 60px;";
+    }
+    else {
+      toc.style.cssText = "";
+    }
+
+    var current = headerNodes.filter(function(header) {
+      var headerY = window.pageYOffset + header.getBoundingClientRect().top;
+      return window.scrollY >= headerY - 60;
+    });
+
+    if (current.length > 0) {
+      current = current[current.length-1];
+
+      var currentA = tocNodes.filter(function(tocNode) {
+        return tocNode.innerHTML == current.innerHTML;
+      })
+      
+      currentA = currentA[0];
+      if (currentA) {
+        if (before == undefined) before = currentA;
+
+        if (before != currentA) {
+          before.classList.remove("toc-active");
+          before = currentA;
+        }
+
+        currentA.classList.add("toc-active");
+      }
+      else {
+        if (before) 
+          before.classList.remove("toc-active");
+      }
+    }
+    else {
+      if (before) 
+          before.classList.remove("toc-active");
+    }
+
+  }, false);
+</script>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/Martin-IT-Blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/Martin-IT-Blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/https%3A%2F%2Fgithub.com%2FMartin-Son%2FMartin-IT-Blog" target="_blank" title="https://github.com/Martin-Son/Martin-IT-Blog"><svg class="svg-icon grey"><use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
