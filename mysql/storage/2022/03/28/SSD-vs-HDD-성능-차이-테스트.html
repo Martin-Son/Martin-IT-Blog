@@ -106,7 +106,7 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h2"><a href="#디스크-타입에-따른-성능">디스크 타입에 따른 성능</a>
 <ul>
 <li class="toc-entry toc-h4"><a href="#sysbench를-이용한-file-io-성능-비교">sysbench를 이용한 File I/O 성능 비교</a></li>
-<li class="toc-entry toc-h4"><a href="#디ㅌ크-타입별-mysql-임시테이블-insert-성능-비교">디ㅌ크 타입별 mysql 임시테이블 Insert 성능 비교</a></li>
+<li class="toc-entry toc-h4"><a href="#디스크-타입별-mysql-임시테이블-insert-성능-비교">디스크 타입별 mysql 임시테이블 Insert 성능 비교</a></li>
 </ul>
 </li>
 </ul><h2 id="디스크-타입에-따른-성능">
@@ -171,8 +171,8 @@ tmpfs           395M     0  395M   0% /run/user/1001
 <p>file-test-mode=rndrw 옵션을 사용해, Random I/O (읽기, 쓰기) 성능 차이를 비교한 결과는 아래와 같습니다.
 <img src="/Martin-IT-Blog/images/EBS_Perf_vs.png" alt="" title="EBS Read Write 성능 비교"></p>
 
-<h4 id="디ㅌ크-타입별-mysql-임시테이블-insert-성능-비교">
-<a class="anchor" href="#%EB%94%94%E3%85%8C%ED%81%AC-%ED%83%80%EC%9E%85%EB%B3%84-mysql-%EC%9E%84%EC%8B%9C%ED%85%8C%EC%9D%B4%EB%B8%94-insert-%EC%84%B1%EB%8A%A5-%EB%B9%84%EA%B5%90" aria-hidden="true"><span class="octicon octicon-link"></span></a>디ㅌ크 타입별 mysql 임시테이블 Insert 성능 비교</h4>
+<h4 id="디스크-타입별-mysql-임시테이블-insert-성능-비교">
+<a class="anchor" href="#%EB%94%94%EC%8A%A4%ED%81%AC-%ED%83%80%EC%9E%85%EB%B3%84-mysql-%EC%9E%84%EC%8B%9C%ED%85%8C%EC%9D%B4%EB%B8%94-insert-%EC%84%B1%EB%8A%A5-%EB%B9%84%EA%B5%90" aria-hidden="true"><span class="octicon octicon-link"></span></a>디스크 타입별 mysql 임시테이블 Insert 성능 비교</h4>
 
 <p>위 테스트는 sysbench 툴을 이용하여 간접적으로 성능 차이를 확인했습니다. 실제 mysql을 사용하면서 디스크 타입에 따라 성능 차이가
 어떻게 나는지 확인하기 위해 임시테이블에 단건 Insert 1000만 건 하는 SP를 생성하여,
