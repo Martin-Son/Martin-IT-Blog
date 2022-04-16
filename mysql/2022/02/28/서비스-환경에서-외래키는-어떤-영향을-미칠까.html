@@ -4,9 +4,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>외래키는 성능에 어떤 영향을 미칠까? | Martin’s Study Blog</title>
+<title>외래키, 성능에 어떤 영향을 미칠까? | Martin’s Study Blog</title>
 <meta name="generator" content="Jekyll v4.1.1" />
-<meta property="og:title" content="외래키는 성능에 어떤 영향을 미칠까?" />
+<meta property="og:title" content="외래키, 성능에 어떤 영향을 미칠까?" />
 <meta name="author" content="Martin.S" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="외래키 (Foreign Key)란? 외래키는 MySQL에서 기본 엔진으로 사용되는 InnoDB 스토리지 엔진에서만 사용 가능한 제약조건입니다. 외래키는 서로 다른 테이블 간 부모-자식 관계를 정의하여, 데이터 변경이 발생하면 정의한 제약조건에 따라 함께 영향을 받는 특징을 가지고 있습니다. 또한, 부모-자식 관계로 정의된 컬럼에 대해 자동으로 인덱스가 생성됩니다." />
@@ -17,9 +17,9 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2022-02-28T18:00:00-06:00" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="외래키는 성능에 어떤 영향을 미칠까?" />
+<meta property="twitter:title" content="외래키, 성능에 어떤 영향을 미칠까?" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-02-28T18:00:00-06:00","datePublished":"2022-02-28T18:00:00-06:00","description":"외래키 (Foreign Key)란? 외래키는 MySQL에서 기본 엔진으로 사용되는 InnoDB 스토리지 엔진에서만 사용 가능한 제약조건입니다. 외래키는 서로 다른 테이블 간 부모-자식 관계를 정의하여, 데이터 변경이 발생하면 정의한 제약조건에 따라 함께 영향을 받는 특징을 가지고 있습니다. 또한, 부모-자식 관계로 정의된 컬럼에 대해 자동으로 인덱스가 생성됩니다.","headline":"외래키는 성능에 어떤 영향을 미칠까?","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/mysql/2022/02/28/%EC%84%9C%EB%B9%84%EC%8A%A4-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-%EC%99%B8%EB%9E%98%ED%82%A4%EB%8A%94-%EC%96%B4%EB%96%A4-%EC%98%81%ED%96%A5%EC%9D%84-%EB%AF%B8%EC%B9%A0%EA%B9%8C.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/mysql/2022/02/28/%EC%84%9C%EB%B9%84%EC%8A%A4-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-%EC%99%B8%EB%9E%98%ED%82%A4%EB%8A%94-%EC%96%B4%EB%96%A4-%EC%98%81%ED%96%A5%EC%9D%84-%EB%AF%B8%EC%B9%A0%EA%B9%8C.html"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-02-28T18:00:00-06:00","datePublished":"2022-02-28T18:00:00-06:00","description":"외래키 (Foreign Key)란? 외래키는 MySQL에서 기본 엔진으로 사용되는 InnoDB 스토리지 엔진에서만 사용 가능한 제약조건입니다. 외래키는 서로 다른 테이블 간 부모-자식 관계를 정의하여, 데이터 변경이 발생하면 정의한 제약조건에 따라 함께 영향을 받는 특징을 가지고 있습니다. 또한, 부모-자식 관계로 정의된 컬럼에 대해 자동으로 인덱스가 생성됩니다.","headline":"외래키, 성능에 어떤 영향을 미칠까?","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/mysql/2022/02/28/%EC%84%9C%EB%B9%84%EC%8A%A4-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-%EC%99%B8%EB%9E%98%ED%82%A4%EB%8A%94-%EC%96%B4%EB%96%A4-%EC%98%81%ED%96%A5%EC%9D%84-%EB%AF%B8%EC%B9%A0%EA%B9%8C.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/mysql/2022/02/28/%EC%84%9C%EB%B9%84%EC%8A%A4-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-%EC%99%B8%EB%9E%98%ED%82%A4%EB%8A%94-%EC%96%B4%EB%96%A4-%EC%98%81%ED%96%A5%EC%9D%84-%EB%AF%B8%EC%B9%A0%EA%B9%8C.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -74,7 +74,7 @@ window.onload = wrap_img;
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">외래키는 성능에 어떤 영향을 미칠까?</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-02-28T18:00:00-06:00" itemprop="datePublished">
+    <h1 class="post-title p-name" itemprop="name headline">외래키, 성능에 어떤 영향을 미칠까?</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-02-28T18:00:00-06:00" itemprop="datePublished">
         Feb 28, 2022
       </time>• 
           <span itemprop="author" itemscope itemtype="http://schema.org/Person">
