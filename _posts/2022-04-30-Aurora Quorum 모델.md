@@ -106,9 +106,7 @@ Aurora는 쿼럼 집합(=Quorum Membership) 개념을 이용하여 장애 상황
 이 값을 통해 쿼럼 집합 구성원들의 상태를 판단합니다.
 
 아래 간단한 예시를 통해 쿼럼 멤버십에 대해 설명드리겠습니다.
-
 ![]({{ site.baseurl }}/images/Aurora_Quorum/quorum_membership.jpeg "Aurora 쿼럼 집합")
-
 기존 구성원(=ABCEDF) 중 F에 장애가 일어났을 때, 아래와 같은 과정을 거치게 됩니다.
 
 1. F 구성원에 장애 발생
