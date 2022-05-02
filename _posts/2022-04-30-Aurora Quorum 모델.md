@@ -1,6 +1,6 @@
 ---
 toc: true
-title: Aurora MySQL Quorum 모델
+title: Aurora Quorum 모델
 layout: post
 comments: true
 author: Martin.S
@@ -61,8 +61,8 @@ Aurora Storage는 위 그림과 같이 총 6개의 복제본으로 구성되어 
 **노드별 LSN**의 크기를 이용하여 가장 최신 상태인 노드를 판단합니다.
 이를 통해 데이터가 있는 노드에 **우선적으로 접근**하여 불필요한 접근을 줄여 **Read Latency를 최소화**합니다.
 
-Latency를 최소화하더라도 여전히 쿼럼 구조는 Latency가 존재합니다.
-그러므로, 쿼럼 읽기 작업이 항상 발생하지 않으며 아래와 같은 상황에서만 발생합니다.
+Latency를 최소화하더라도 여전히 쿼럼 구조는 Latency가 발생하므로
+쿼럼 읽기 작업이 항상 발생하지 않으며 아래와 같은 상황에서만 발생합니다.
 1. 메모리에 없는(=캐싱되지 않은) 데이터에 대한 조회 요청
 2. Master 인스턴스 재시작
 3. Reader 인스턴스가 Master로 승격
