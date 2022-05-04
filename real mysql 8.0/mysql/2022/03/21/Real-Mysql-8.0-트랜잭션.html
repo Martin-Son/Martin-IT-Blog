@@ -11,15 +11,15 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="트랜잭션이란? 논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해 작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다." />
 <meta property="og:description" content="트랜잭션이란? 논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해 작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다." />
-<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html" />
-<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html" />
+<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html" />
+<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html" />
 <meta property="og:site_name" content="Martin’s Study Blog" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2022-03-21T18:00:00-05:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="트랜잭션과 잠금 (Real Mysql 8.0)" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-03-21T18:00:00-05:00","datePublished":"2022-03-21T18:00:00-05:00","description":"트랜잭션이란? 논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해 작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다.","headline":"트랜잭션과 잠금 (Real Mysql 8.0)","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-03-21T18:00:00-05:00","datePublished":"2022-03-21T18:00:00-05:00","description":"트랜잭션이란? 논리적인 작업의 가장 작은 단위로, 작업의 일관성을 보장해주기 위한 단위입니다. 이러한 특성에 의해 작업이 부분적으로 실패하거나 성공하지 않고, 완전히 성공 또는 실패하게 됩니다.","headline":"트랜잭션과 잠금 (Real Mysql 8.0)","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -90,6 +90,9 @@ window.onload = wrap_img;
       <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
       
         <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Real MySQL 8.0">Real MySQL 8.0</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#MySQL">MySQL</a>
         
       
       </p>
@@ -771,7 +774,7 @@ ALGORITHM=INPLACE, LOCK=NONE 옵션을 이용해 작업 유형별 Online DDL이 
     })();
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a class="u-url" href="/Martin-IT-Blog/real%20mysql%208.0/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html" hidden></a>
+<a class="u-url" href="/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html" hidden></a>
 </article>
 
 <script>
