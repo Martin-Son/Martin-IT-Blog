@@ -9,52 +9,57 @@
 
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/about/</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/gitInfo/</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/search/</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/categories/</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/2022/07/10/Aurora-MySQL-History-Length-%EC%98%81%ED%96%A5%EB%8F%84-%EC%B5%9C%EC%86%8C%ED%99%94.html</loc>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/aurora/stoarge/quorum/aws/2022/04/30/Aurora-Quorum-%EB%AA%A8%EB%8D%B8.html</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/mysql/storage/2022/03/28/SSD-vs-HDD-%EC%84%B1%EB%8A%A5-%EC%B0%A8%EC%9D%B4-%ED%85%8C%EC%8A%A4%ED%8A%B8.html</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/21/Real-Mysql-8.0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98.html</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/03/13/Real-Mysql-8.0-%EC%84%A4%EC%B9%98.html</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://martin-son.github.io/Martin-IT-Blog/mysql/foreign%20key/performance/2022/02/28/foreign-key-Performance.html</loc>
-  <lastmod>2022-05-04T05:44:15+00:00</lastmod>
+  <lastmod>2022-07-11T04:48:30+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 
