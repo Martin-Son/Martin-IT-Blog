@@ -68,46 +68,45 @@ set session transaction isolation level read committed;
 ```
 
 * 테이블 스키마
-```sql
--- 테스트 테이블 스키마 확인 (1억 건 테이블 / 59GB) 
-mysql> show create table sbtest1;
+  ```sql
+   -- 테스트 테이블 스키마 확인 (1억 건 테이블 / 59GB) 
+   mysql> show create table sbtest1;
  
-| sbtest1 | CREATE TABLE `sbtest1` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `k` int(11) NOT NULL DEFAULT '0',
-  `c` char(120) NOT NULL DEFAULT '',
-  `pad` char(60) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `ix_test` (`pad`,`c`),
-  KEY `ix_test2` (`c`,`k`)
-) ENGINE=InnoDB AUTO_INCREMENT=100048996 DEFAULT CHARSET=utf8mb4 |
-```
+   | sbtest1 | CREATE TABLE `sbtest1` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `k` int(11) NOT NULL DEFAULT '0',
+   `c` char(120) NOT NULL DEFAULT '',
+   `pad` char(60) NOT NULL DEFAULT '',
+   PRIMARY KEY (`id`),
+   KEY `ix_test` (`pad`,`c`),
+   KEY `ix_test2` (`c`,`k`)
+   ) ENGINE=InnoDB AUTO_INCREMENT=100048996 DEFAULT CHARSET=utf8mb4 |
+   ```
 
 ### 테스트 시나리오
 1. sysbench 툴을 이용한 트래픽 환경 조성
-```bash
-# 32개 스레드
-/usr/local/sysbench/bin/sysbench \
-        /usr/local/sysbench/share/sysbench/oltp_read_write.lua \
-        --mysql-host='[호스트]' \
-        --mysql-port=6025 \
-        --mysql-user=master --mysql-password='[비밀번호]' \
-        --mysql-db=test --db-driver=mysql \
-        --delete_inserts=30 --index_updates=10 \
-        --non_index_updates=30 --threads=32 --time=300 --forced-shutdown --report-interval=1 run
-```
+   ```bash
+   # 32개 스레드
+   /usr/local/sysbench/bin/sysbench \
+           /usr/local/sysbench/share/sysbench/oltp_read_write.lua \
+           --mysql-host='[호스트]' \
+           --mysql-port=6025 \
+           --mysql-user=master --mysql-password='[비밀번호]' \
+           --mysql-db=test --db-driver=mysql \
+           --delete_inserts=30 --index_updates=10 \
+           --non_index_updates=30 --threads=32 --time=300 --forced-shutdown --report-interval=1 run
+   ```
 2. 롱쿼리를 통한 롱 트랜잭션 환경 구성 (풀테이블 스캔)
-```sql
-mysql> explain select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k < 50000 ORDER BY A.k DESC LIMIT 20000 ;
-+----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+
-| id | select_type | table | partitions | type  | possible_keys | key      | key_len | ref  | rows     | filtered | Extra                                                           |
-+----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+
-|  1 | SIMPLE      | A     | NULL       | ALL   | NULL          | NULL     | NULL    | NULL | 98631208 |   100.00 | Using temporary; Using filesort                                 |
-|  1 | SIMPLE      | B     | NULL       | index | NULL          | ix_test2 | 484     | NULL | 98631208 |    33.33 | Using where; Using index; Using join buffer (Block Nested Loop) |
-+----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+
-2 rows in set, 1 warning (0.00 sec)
-``` 
-
+   ```sql
+   mysql> explain select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k < 50000 ORDER BY A.k DESC LIMIT 20000 ;
+   +----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+
+   | id | select_type | table | partitions | type  | possible_keys | key      | key_len | ref  | rows     | filtered | Extra                                                           |
+   +----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+
+   |  1 | SIMPLE      | A     | NULL       | ALL   | NULL          | NULL     | NULL    | NULL | 98631208 |   100.00 | Using temporary; Using filesort                                 |
+   |  1 | SIMPLE      | B     | NULL       | index | NULL          | ix_test2 | 484     | NULL | 98631208 |    33.33 | Using where; Using index; Using join buffer (Block Nested Loop) |
+   +----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+
+   2 rows in set, 1 warning (0.00 sec)
+   ``` 
 3. 옵션 적용 여부에 따른, History Length 상승 비교
    * **옵션 미적용 시나리오**
    ```sql
