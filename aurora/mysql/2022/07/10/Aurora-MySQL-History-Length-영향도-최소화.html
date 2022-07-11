@@ -228,21 +228,22 @@ REPEATABLE READ 환경은 쿼리 실행 시점의 결과와, 실행 완료 시�
       <li>
 <strong>옵션 미적용 시나리오</strong>
         <div class="language-sql highlighter-rouge">
-<div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">A</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">as</span> <span class="n">A</span> <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">AS</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">B</span><span class="p">.</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">50000</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">A</span><span class="p">.</span><span class="n">k</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20000</span><span class="p">;</span>
+<div class="highlight"><pre class="highlight"><code> <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">A</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">as</span> <span class="n">A</span> <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">AS</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">B</span><span class="p">.</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">50000</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">A</span><span class="p">.</span><span class="n">k</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20000</span><span class="p">;</span>
 </code></pre></div>        </div>
       </li>
       <li>
 <strong>옵션 적용 시나리오</strong>
-```sql
-mysql&gt; set session aurora_read_replica_read_committed = ON;
-Query OK, 0 rows affected (0.01 sec)</li>
+        <div class="language-sql highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">set</span> <span class="k">session</span> <span class="n">aurora_read_replica_read_committed</span> <span class="o">=</span> <span class="k">ON</span><span class="p">;</span>
+ <span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+   
+ <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">set</span> <span class="k">session</span> <span class="n">transaction</span> <span class="k">isolation</span> <span class="k">level</span> <span class="k">read</span> <span class="k">committed</span><span class="p">;</span>
+ <span class="n">Query</span> <span class="n">OK</span><span class="p">,</span> <span class="mi">0</span> <span class="k">rows</span> <span class="n">affected</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+   
+ <span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">A</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">as</span> <span class="n">A</span> <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">AS</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">B</span><span class="p">.</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">50000</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">A</span><span class="p">.</span><span class="n">k</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20000</span><span class="p">;</span>
+</code></pre></div>        </div>
+      </li>
     </ul>
-
-    <p>mysql&gt; set session transaction isolation level read committed;
-Query OK, 0 rows affected (0.02 sec)</p>
-
-    <p>mysql&gt; select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k &lt; 50000 ORDER BY A.k DESC LIMIT 20000;
-```</p>
   </li>
 </ol>
 
