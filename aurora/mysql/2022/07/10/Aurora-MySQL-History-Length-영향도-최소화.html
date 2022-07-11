@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Aurora MySQL History Length 상승을 예방하는 방법 | Martin’s Study Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Aurora MySQL History Length 상승을 예방하는 방법" />
+<meta name="author" content="Martin.S" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="History Length란? Aurora MySQL은 On-premise MySQL 환경과 동일하게 REPEATABLE READ isolation level이 Default로 설정되어 있습니다. REPEATABLE READ 환경은 쿼리 실행 시점의 결과와, 실행 완료 시점의 결과가 동일해야 하기 때문에, 스냅샷 형태로 해당 시점의 결과를 저장하게 됩니다. 동시성이 높은 환경에서, 롱쿼리가 발생하게 되어 오랜 시간 시점데이터가 유지될수록, History Legnth 수치가 상승하게 됩니다." />
+<meta property="og:description" content="History Length란? Aurora MySQL은 On-premise MySQL 환경과 동일하게 REPEATABLE READ isolation level이 Default로 설정되어 있습니다. REPEATABLE READ 환경은 쿼리 실행 시점의 결과와, 실행 완료 시점의 결과가 동일해야 하기 때문에, 스냅샷 형태로 해당 시점의 결과를 저장하게 됩니다. 동시성이 높은 환경에서, 롱쿼리가 발생하게 되어 오랜 시간 시점데이터가 유지될수록, History Legnth 수치가 상승하게 됩니다." />
+<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/2022/07/10/Aurora-MySQL-History-Length-%EC%98%81%ED%96%A5%EB%8F%84-%EC%B5%9C%EC%86%8C%ED%99%94.html" />
+<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/2022/07/10/Aurora-MySQL-History-Length-%EC%98%81%ED%96%A5%EB%8F%84-%EC%B5%9C%EC%86%8C%ED%99%94.html" />
+<meta property="og:site_name" content="Martin’s Study Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-07-10T18:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Aurora MySQL History Length 상승을 예방하는 방법" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-07-10T18:00:00-05:00","datePublished":"2022-07-10T18:00:00-05:00","description":"History Length란? Aurora MySQL은 On-premise MySQL 환경과 동일하게 REPEATABLE READ isolation level이 Default로 설정되어 있습니다. REPEATABLE READ 환경은 쿼리 실행 시점의 결과와, 실행 완료 시점의 결과가 동일해야 하기 때문에, 스냅샷 형태로 해당 시점의 결과를 저장하게 됩니다. 동시성이 높은 환경에서, 롱쿼리가 발생하게 되어 오랜 시간 시점데이터가 유지될수록, History Legnth 수치가 상승하게 됩니다.","headline":"Aurora MySQL History Length 상승을 예방하는 방법","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/2022/07/10/Aurora-MySQL-History-Length-%EC%98%81%ED%96%A5%EB%8F%84-%EC%B5%9C%EC%86%8C%ED%99%94.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/2022/07/10/Aurora-MySQL-History-Length-%EC%98%81%ED%96%A5%EB%8F%84-%EC%B5%9C%EC%86%8C%ED%99%94.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/Martin-IT-Blog/">Martin&#39;s Study Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/Martin-IT-Blog/about/">About Me</a><a class="page-link" href="/Martin-IT-Blog/gitInfo/">gitInfo</a><a class="page-link" href="/Martin-IT-Blog/search/">Search</a><a class="page-link" href="/Martin-IT-Blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Aurora MySQL History Length 상승을 예방하는 방법</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-07-10T18:00:00-05:00" itemprop="datePublished">
+        Jul 10, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Martin.S</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      4 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Aurora">Aurora</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#MySQL">MySQL</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  
+  <div class="post-content e-content" itemprop="articleBody">    
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h3"><a href="#history-length란">History Length란?</a></li>
+<li class="toc-entry toc-h3"><a href="#옵션을-통한-history-length-상승-관리">옵션을 통한 History Length 상승 관리</a></li>
+<li class="toc-entry toc-h2"><a href="#옵션-성능-테스트">옵션 성능 테스트</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#테스트-환경">테스트 환경</a></li>
+<li class="toc-entry toc-h3"><a href="#결론">결론</a></li>
+</ul>
+</li>
+</ul><h3 id="history-length란">
+<a class="anchor" href="#history-length%EB%9E%80" aria-hidden="true"><span class="octicon octicon-link"></span></a>History Length란?</h3>
+<p>Aurora MySQL은 On-premise MySQL 환경과 동일하게 <strong>REPEATABLE READ</strong> isolation level이 Default로 설정되어 있습니다.
+REPEATABLE READ 환경은 쿼리 실행 시점의 결과와, 실행 완료 시점의 결과가 동일해야 하기 때문에, 스냅샷 형태로 해당 시점의 결과를 저장하게 됩니다.
+동시성이 높은 환경에서, 롱쿼리가 발생하게 되어 오랜 시간 시점데이터가 유지될수록, <strong>History Legnth</strong> 수치가 상승하게 됩니다.</p>
+
+<p>History Length가 높아질수록, 오래된 데이터 스냅샷으로 인해 다른 조회 쿼리들도 시점 데이터를 통해 걸러내는 과정이 추가되면서,
+<strong>검색 비효율</strong>이 발생하고 지연이 발생할 수 있습니다. 극단적으로 트래픽이 높은 서비스 환경에서는 약간의 지연으로 고객들의 불편함이 커지고, 
+서비스 장애의 원인이 될 수 있기 때문에, 모니터링해야 하는 필수적인 지표 중 하나입니다.</p>
+
+<h3 id="옵션을-통한-history-length-상승-관리">
+<a class="anchor" href="#%EC%98%B5%EC%85%98%EC%9D%84-%ED%86%B5%ED%95%9C-history-length-%EC%83%81%EC%8A%B9-%EA%B4%80%EB%A6%AC" aria-hidden="true"><span class="octicon octicon-link"></span></a>옵션을 통한 History Length 상승 관리</h3>
+<p>위에서 설명드린 바와 같이, History Length가 서비스에 영향을 줄 수 있는 중요한 요소 중 하나이기 때문에,
+기존 on-premise MySQL에서는 이를 관리하기 위해 아래의 옵션을 통해 긴 조회쿼리를 실행해야 하는 상황에서 session isolation level을 통해 관리가 가능했습니다.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- Isolation level 변경 (REPATABLE READ -&gt; READ COMMITTED)</span>
+<span class="n">mysql</span><span class="o">&gt;</span> <span class="k">set</span> <span class="k">session</span> <span class="n">transaction</span> <span class="k">isolation</span> <span class="k">level</span> <span class="k">read</span> <span class="k">committed</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>하지만, Aurora MySQL의 공유 스토리지 환경은 위 옵션만으로는 History Length 관리가 되지 않는 문제점이 있었습니다.
+공식 문서인 <a href="https://docs.aws.amazon.com/ko_kr/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.html#AuroraMySQL.Reference.IsolationLevels">Aurora MySQL 격리수준</a>을 통해 기존처럼 관리가 되지 않는 문제를 아래와 같이 표현하고 있습니다.</p>
+
+<blockquote>
+  <p><strong>리더 인스턴스의 REPEATABLE READ 격리 수준</strong></p>
+  <ul>
+    <li>기본적으로 읽기 전용 Aurora 복제본으로 구성된 Aurora MySQL DB 인스턴스에서는 항상 REPEATABLE READ 격리 수준을 사용합니다. 이 DB 인스턴스에서는 SET TRANSACTION ISOLATION LEVEL 문은 모두 무시하고 계속해서 REPEATABLE READ 격리 수준을 사용합니다.</li>
+    <li>이 설정을 사용하기 전에 READ COMMITTED 격리의 특정 Aurora MySQL 동작을 이해하는 것이 좋습니다. Aurora 복제본 READ COMMITTED 동작은 ANSI SQL 표준을 준수합니다. 그러나 격리는 사용자에게 익숙한 일반적인 MySQL READ COMMITTED 동작보다 덜 엄격합니다.</li>
+  </ul>
+</blockquote>
+
+<p>Aurora MySQL의 공유스토리지 환경에서도, History Length 관리를 돕기 위해 <code class="language-plaintext highlighter-rouge">aurora_read_replica_read_committed</code> 옵션이 제공됩니다.</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- Isolation level 변경 (REPATABLE READ -&gt; READ COMMITTED)</span>
+<span class="c1">-- SET 명령문을 이용한 세션 옵션 적용</span>
+<span class="k">set</span> <span class="k">session</span> <span class="n">aurora_read_replica_read_committed</span> <span class="o">=</span> <span class="k">ON</span><span class="p">;</span>
+<span class="k">set</span> <span class="k">session</span> <span class="n">transaction</span> <span class="k">isolation</span> <span class="k">level</span> <span class="k">read</span> <span class="k">committed</span><span class="p">;</span>
+</code></pre></div></div>
+<p>해당 옵션은 Aurora MySQL 엔진 버전 <strong>1.21.x 이상 / 2.07.x 이상</strong> 버전부터 적용이 가능하며, 
+위 두개 구문 모두를 적용해야 Reader 장비 조회 쿼리로 인한 History Length 상승을 방지할 수 있습니다.</p>
+
+<h2 id="옵션-성능-테스트">
+<a class="anchor" href="#%EC%98%B5%EC%85%98-%EC%84%B1%EB%8A%A5-%ED%85%8C%EC%8A%A4%ED%8A%B8" aria-hidden="true"><span class="octicon octicon-link"></span></a>옵션 성능 테스트</h2>
+<h3 id="테스트-환경">
+<a class="anchor" href="#%ED%85%8C%EC%8A%A4%ED%8A%B8-%ED%99%98%EA%B2%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a>테스트 환경</h3>
+<p>해당 옵션이 History Length 관리에 효과가 있는지 아래 환경에서 테스트를 진행했습니다.</p>
+
+<ul>
+  <li>테스트 장비 스펙
+    <ul>
+      <li>RDS 버전: Aurora MySQL 2.09.2</li>
+      <li>RDS 인스턴스 타입: r6g.large</li>
+      <li>sysbench(EC2) 타입: c5.large</li>
+    </ul>
+  </li>
+  <li>테스트 테이블 구성
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="c"># sysbench를 이용하여 1억 건 테스트 테이블 구성</span>
+ /usr/local/sysbench/bin/sysbench <span class="se">\</span>
+      /usr/local/sysbench/share/sysbench/oltp_read_write.lua <span class="se">\</span>
+      <span class="nt">--mysql-host</span><span class="o">=</span><span class="s1">'호스트명'</span> <span class="se">\</span>
+      <span class="nt">--mysql-port</span><span class="o">=</span>6025 <span class="se">\</span>
+      <span class="nt">--mysql-user</span><span class="o">=</span>master <span class="nt">--mysql-password</span><span class="o">=</span><span class="s1">'[비밀번호]'</span> <span class="se">\</span>
+      <span class="nt">--mysql-db</span><span class="o">=</span><span class="nb">test</span> <span class="nt">--db-driver</span><span class="o">=</span>mysql <span class="nt">--tables</span><span class="o">=</span>1 <span class="se">\</span>
+      <span class="nt">--table-size</span><span class="o">=</span>100000000 <span class="nt">--threads</span><span class="o">=</span>128 prepare
+</code></pre></div>    </div>
+  </li>
+  <li>테이블 스키마
+```sql
+– 테스트 테이블 스키마 확인 (1억 건 테이블 / 59GB) 
+mysql&gt; show create table sbtest1;</li>
+</ul>
+
+<p>| sbtest1 | CREATE TABLE <code class="language-plaintext highlighter-rouge">sbtest1</code> (
+  <code class="language-plaintext highlighter-rouge">id</code> int(11) NOT NULL AUTO_INCREMENT,
+  <code class="language-plaintext highlighter-rouge">k</code> int(11) NOT NULL DEFAULT ‘0’,
+  <code class="language-plaintext highlighter-rouge">c</code> char(120) NOT NULL DEFAULT ‘’,
+  <code class="language-plaintext highlighter-rouge">pad</code> char(60) NOT NULL DEFAULT ‘’,
+  PRIMARY KEY (<code class="language-plaintext highlighter-rouge">id</code>),
+  KEY <code class="language-plaintext highlighter-rouge">ix_test</code> (<code class="language-plaintext highlighter-rouge">pad</code>,<code class="language-plaintext highlighter-rouge">c</code>),
+  KEY <code class="language-plaintext highlighter-rouge">ix_test2</code> (<code class="language-plaintext highlighter-rouge">c</code>,<code class="language-plaintext highlighter-rouge">k</code>)
+) ENGINE=InnoDB AUTO_INCREMENT=100048996 DEFAULT CHARSET=utf8mb4 |</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+### 테스트 시나리오
+1. sysbench 툴을 이용한 트래픽 환경 조성
+```bash
+# 32개 스레드
+/usr/local/sysbench/bin/sysbench \
+        /usr/local/sysbench/share/sysbench/oltp_read_write.lua \
+        --mysql-host='[호스트]' \
+        --mysql-port=6025 \
+        --mysql-user=master --mysql-password='[비밀번호]' \
+        --mysql-db=test --db-driver=mysql \
+        --delete_inserts=30 --index_updates=10 \
+        --non_index_updates=30 --threads=32 --time=300 --forced-shutdown --report-interval=1 run
+</code></pre></div></div>
+<ol>
+  <li>롱쿼리를 통한 롱 트랜잭션 환경 구성 (풀테이블 스캔)
+    <div class="language-sql highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="k">select</span> <span class="n">A</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">as</span> <span class="n">A</span> <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">AS</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">B</span><span class="p">.</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">50000</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">A</span><span class="p">.</span><span class="n">k</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20000</span> <span class="p">;</span>
+<span class="o">+</span><span class="c1">----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">id</span> <span class="o">|</span> <span class="n">select_type</span> <span class="o">|</span> <span class="k">table</span> <span class="o">|</span> <span class="n">partitions</span> <span class="o">|</span> <span class="k">type</span>  <span class="o">|</span> <span class="n">possible_keys</span> <span class="o">|</span> <span class="k">key</span>      <span class="o">|</span> <span class="n">key_len</span> <span class="o">|</span> <span class="k">ref</span>  <span class="o">|</span> <span class="k">rows</span>     <span class="o">|</span> <span class="n">filtered</span> <span class="o">|</span> <span class="n">Extra</span>                                                           <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="mi">1</span> <span class="o">|</span> <span class="k">SIMPLE</span>      <span class="o">|</span> <span class="n">A</span>     <span class="o">|</span> <span class="k">NULL</span>       <span class="o">|</span> <span class="k">ALL</span>   <span class="o">|</span> <span class="k">NULL</span>          <span class="o">|</span> <span class="k">NULL</span>     <span class="o">|</span> <span class="k">NULL</span>    <span class="o">|</span> <span class="k">NULL</span> <span class="o">|</span> <span class="mi">98631208</span> <span class="o">|</span>   <span class="mi">100</span><span class="p">.</span><span class="mi">00</span> <span class="o">|</span> <span class="k">Using</span> <span class="k">temporary</span><span class="p">;</span> <span class="k">Using</span> <span class="n">filesort</span>                                 <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">1</span> <span class="o">|</span> <span class="k">SIMPLE</span>      <span class="o">|</span> <span class="n">B</span>     <span class="o">|</span> <span class="k">NULL</span>       <span class="o">|</span> <span class="k">index</span> <span class="o">|</span> <span class="k">NULL</span>          <span class="o">|</span> <span class="n">ix_test2</span> <span class="o">|</span> <span class="mi">484</span>     <span class="o">|</span> <span class="k">NULL</span> <span class="o">|</span> <span class="mi">98631208</span> <span class="o">|</span>    <span class="mi">33</span><span class="p">.</span><span class="mi">33</span> <span class="o">|</span> <span class="k">Using</span> <span class="k">where</span><span class="p">;</span> <span class="k">Using</span> <span class="k">index</span><span class="p">;</span> <span class="k">Using</span> <span class="k">join</span> <span class="n">buffer</span> <span class="p">(</span><span class="n">Block</span> <span class="n">Nested</span> <span class="n">Loop</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+-------------+-------+------------+-------+---------------+----------+---------+------+----------+----------+-----------------------------------------------------------------+</span>
+<span class="mi">2</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span><span class="p">,</span> <span class="mi">1</span> <span class="n">warning</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+  <li>옵션 적용 여부에 따른, History Length 상승 비교
+    <ul>
+      <li>
+<strong>옵션 미적용 시나리오</strong>
+        <div class="language-sql highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">A</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">as</span> <span class="n">A</span> <span class="k">CROSS</span> <span class="k">JOIN</span> <span class="n">test</span><span class="p">.</span><span class="n">sbtest1</span> <span class="k">AS</span> <span class="n">B</span> <span class="k">WHERE</span> <span class="n">B</span><span class="p">.</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">50000</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">A</span><span class="p">.</span><span class="n">k</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">20000</span><span class="p">;</span>
+</code></pre></div>        </div>
+      </li>
+      <li>
+<strong>옵션 적용 시나리오</strong>
+```sql
+mysql&gt; set session aurora_read_replica_read_committed = ON;
+Query OK, 0 rows affected (0.01 sec)</li>
+    </ul>
+
+    <p>mysql&gt; set session transaction isolation level read committed;
+Query OK, 0 rows affected (0.02 sec)</p>
+
+    <p>mysql&gt; select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k &lt; 50000 ORDER BY A.k DESC LIMIT 20000;
+```</p>
+  </li>
+</ol>
+
+<p><img src="/Martin-IT-Blog/images/History_Length_cloudwatch.png" alt="" title="옵션 적용 여부에 따른 History Length 상승 비교"></p>
+
+<h3 id="결론">
+<a class="anchor" href="#%EA%B2%B0%EB%A1%A0" aria-hidden="true"><span class="octicon octicon-link"></span></a>결론</h3>
+<ul>
+  <li>운영환경에서, 위 옵션 적용을 통해 Reader 장비에서 조회쿼리로 인한 History Length 상승을 예방할 수 있다는 걸 확인할 수 있었습니다.
+History Length로 인해 크리티컬한 서비스 환경이라면, 조회 쿼리에 대해 해당 옵션 적용이 유용할 것으로 보입니다.</li>
+</ul>
+
+  </div><!-- from https://github.com/utterance/utterances
+<script src="https://utteranc.es/client.js"
+        repo="Martin-Son/Martin-IT-Blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>  -->
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://martin-it-study-blog.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a class="u-url" href="/Martin-IT-Blog/aurora/mysql/2022/07/10/Aurora-MySQL-History-Length-%EC%98%81%ED%96%A5%EB%8F%84-%EC%B5%9C%EC%86%8C%ED%99%94.html" hidden></a>
+</article>
+
+<script>
+  function getTOCNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var tocNodes = nodes.filter(function(elem) {
+        return elem.tagName == "A";
+    });
+    return tocNodes;
+  }
+  function getHeaderNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var headerNodes = nodes.filter(function(elem) {
+        return elem.tagName == "H1" || elem.tagName == "H2" || elem.tagName == "H3" || elem.tagName == "H4" || elem.tagName == "H5" || elem.tagName == "H6";
+    });
+    return headerNodes;
+  }
+
+  var title = document.getElementsByClassName("post-title")[0];
+  var titleY = window.pageYOffset + title.getBoundingClientRect().top;
+  
+  var article = document.getElementsByClassName("post-article")[0];
+  var articleY = window.pageYOffset + article.getBoundingClientRect().top;
+
+  var toc = document.getElementsByClassName("toc")[0];
+
+  var headerNodes = getHeaderNodes(article);
+  var tocNodes = getTOCNodes(toc);
+
+  var before = undefined;
+
+  document.addEventListener('scroll', function(e) {
+    if (window.scrollY >= articleY-60) {
+      toc.style.cssText = "position: fixed; top: 60px;";
+    }
+    else {
+      toc.style.cssText = "";
+    }
+
+    var current = headerNodes.filter(function(header) {
+      var headerY = window.pageYOffset + header.getBoundingClientRect().top;
+      return window.scrollY >= headerY - 60;
+    });
+
+    if (current.length > 0) {
+      current = current[current.length-1];
+
+      var currentA = tocNodes.filter(function(tocNode) {
+        return tocNode.innerHTML == current.innerHTML;
+      })
+      
+      currentA = currentA[0];
+      if (currentA) {
+        if (before == undefined) before = currentA;
+
+        if (before != currentA) {
+          before.classList.remove("toc-active");
+          before = currentA;
+        }
+
+        currentA.classList.add("toc-active");
+      }
+      else {
+        if (before) 
+          before.classList.remove("toc-active");
+      }
+    }
+    else {
+      if (before) 
+          before.classList.remove("toc-active");
+    }
+
+  }, false);
+</script>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/Martin-IT-Blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/Martin-IT-Blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/https%3A%2F%2Fgithub.com%2FMartin-Son%2FMartin-IT-Blog" target="_blank" title="https://github.com/Martin-Son/Martin-IT-Blog"><svg class="svg-icon grey"><use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
