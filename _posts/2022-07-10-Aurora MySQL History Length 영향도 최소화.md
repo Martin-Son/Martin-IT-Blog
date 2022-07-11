@@ -109,19 +109,19 @@ set session transaction isolation level read committed;
    ``` 
 3. 옵션 적용 여부에 따른, History Length 상승 비교
    * **옵션 미적용 시나리오**
-   ```sql
-   mysql> select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k < 50000 ORDER BY A.k DESC LIMIT 20000;
-   ```
+      ```sql
+      mysql> select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k < 50000 ORDER BY A.k DESC LIMIT 20000;
+      ```
    * **옵션 적용 시나리오**
-   ```sql
-   mysql> set session aurora_read_replica_read_committed = ON;
-   Query OK, 0 rows affected (0.01 sec)
+      ```sql
+      mysql> set session aurora_read_replica_read_committed = ON;
+      Query OK, 0 rows affected (0.01 sec)
    
-   mysql> set session transaction isolation level read committed;
-   Query OK, 0 rows affected (0.02 sec)
+      mysql> set session transaction isolation level read committed;
+      Query OK, 0 rows affected (0.02 sec)
    
-   mysql> select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k < 50000 ORDER BY A.k DESC LIMIT 20000;
-   ```
+      mysql> select A.* FROM test.sbtest1 as A CROSS JOIN test.sbtest1 AS B WHERE B.k < 50000 ORDER BY A.k DESC LIMIT 20000;
+      ```
 
 ![]({{ site.baseurl }}/images/History_Length_cloudwatch.png "옵션 적용 여부에 따른 History Length 상승 비교")
 
