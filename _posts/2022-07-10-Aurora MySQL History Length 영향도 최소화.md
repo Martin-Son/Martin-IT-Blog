@@ -5,7 +5,7 @@ layout: post
 comments: true
 author: Martin.S
 date: '2022-07-10 18:00:00'
-published: false
+published: true
 categories: [Aurora, MySQL]
 ---
 
