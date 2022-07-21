@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>인덱스(1) (Real Mysql 8.0) | Martin’s Study Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="인덱스(1) (Real Mysql 8.0)" />
+<meta name="author" content="Martin.S" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="인덱스 인덱스는 원하는 데이터를 쉽고 빠르게 찾을 수 있게 해주는 역할을 합니다. 원하는 정보를 검색할 때, 인덱스를 통해 해당 데이터의 주소를 찾아낼 수 있습니다. 인덱스는 key-value(인덱스 칼럼 - 데이터 주소값)로 이루어진 한 쌍으로 구성되어 있으며, 인덱스를 구성하는 컬럼순으로 항상 정렬되어 있습니다. 항상 정렬되어 있기 때문에, 인덱스가 많을수록 조회(=SELECT) 성능이 개선되고 데이터를 변경하는 DML(INSERT, DELETE, UPDATE)은 정렬로 인해 성능이 저하됩니다." />
+<meta property="og:description" content="인덱스 인덱스는 원하는 데이터를 쉽고 빠르게 찾을 수 있게 해주는 역할을 합니다. 원하는 정보를 검색할 때, 인덱스를 통해 해당 데이터의 주소를 찾아낼 수 있습니다. 인덱스는 key-value(인덱스 칼럼 - 데이터 주소값)로 이루어진 한 쌍으로 구성되어 있으며, 인덱스를 구성하는 컬럼순으로 항상 정렬되어 있습니다. 항상 정렬되어 있기 때문에, 인덱스가 많을수록 조회(=SELECT) 성능이 개선되고 데이터를 변경하는 DML(INSERT, DELETE, UPDATE)은 정렬로 인해 성능이 저하됩니다." />
+<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/07/17/Real-Mysql-8.0-%EC%9D%B8%EB%8D%B1%EC%8A%A4(1).html" />
+<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/07/17/Real-Mysql-8.0-%EC%9D%B8%EB%8D%B1%EC%8A%A4(1).html" />
+<meta property="og:site_name" content="Martin’s Study Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-07-17T18:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="인덱스(1) (Real Mysql 8.0)" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-07-17T18:00:00-05:00","datePublished":"2022-07-17T18:00:00-05:00","description":"인덱스 인덱스는 원하는 데이터를 쉽고 빠르게 찾을 수 있게 해주는 역할을 합니다. 원하는 정보를 검색할 때, 인덱스를 통해 해당 데이터의 주소를 찾아낼 수 있습니다. 인덱스는 key-value(인덱스 칼럼 - 데이터 주소값)로 이루어진 한 쌍으로 구성되어 있으며, 인덱스를 구성하는 컬럼순으로 항상 정렬되어 있습니다. 항상 정렬되어 있기 때문에, 인덱스가 많을수록 조회(=SELECT) 성능이 개선되고 데이터를 변경하는 DML(INSERT, DELETE, UPDATE)은 정렬로 인해 성능이 저하됩니다.","headline":"인덱스(1) (Real Mysql 8.0)","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/07/17/Real-Mysql-8.0-%EC%9D%B8%EB%8D%B1%EC%8A%A4(1).html"},"url":"https://martin-son.github.io/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/07/17/Real-Mysql-8.0-%EC%9D%B8%EB%8D%B1%EC%8A%A4(1).html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/Martin-IT-Blog/">Martin&#39;s Study Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/Martin-IT-Blog/about/">About Me</a><a class="page-link" href="/Martin-IT-Blog/gitInfo/">gitInfo</a><a class="page-link" href="/Martin-IT-Blog/search/">Search</a><a class="page-link" href="/Martin-IT-Blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">인덱스(1) (Real Mysql 8.0)</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-07-17T18:00:00-05:00" itemprop="datePublished">
+        Jul 17, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Martin.S</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      2 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Real MySQL 8.0">Real MySQL 8.0</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#MySQL">MySQL</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  
+  <div class="post-content e-content" itemprop="articleBody">    
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#인덱스">인덱스</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#인덱스의-종류">인덱스의 종류</a></li>
+<li class="toc-entry toc-h3"><a href="#b-tree-인덱스">B-Tree 인덱스</a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#b-tree-인덱스-키-추가">B-Tree 인덱스 키 추가</a></li>
+<li class="toc-entry toc-h4"><a href="#b-tree-인덱스-키-삭제">B-Tree 인덱스 키 삭제</a></li>
+<li class="toc-entry toc-h4"><a href="#b-tree-인덱스-키-변경">B-Tree 인덱스 키 변경</a></li>
+<li class="toc-entry toc-h4"><a href="#b-tree-인덱스-키-검색">B-Tree 인덱스 키 검색</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h3"><a href="#b-tree-인덱스-사용에-영향을-주는-요소">B-Tree 인덱스 사용에 영향을 주는 요소</a></li>
+</ul>
+</li>
+</ul><h2 id="인덱스">
+<a class="anchor" href="#%EC%9D%B8%EB%8D%B1%EC%8A%A4" aria-hidden="true"><span class="octicon octicon-link"></span></a>인덱스</h2>
+<ul>
+  <li>인덱스는 원하는 데이터를 쉽고 빠르게 찾을 수 있게 해주는 역할을 합니다. 원하는 정보를 검색할 때,
+인덱스를 통해 해당 데이터의 주소를 찾아낼 수 있습니다.</li>
+  <li>인덱스는 key-value(인덱스 칼럼 - 데이터 주소값)로 이루어진 한 쌍으로 구성되어 있으며, 인덱스를 구성하는 <strong>컬럼순으로 항상 정렬</strong>되어 있습니다.</li>
+  <li>항상 정렬되어 있기 때문에, 인덱스가 많을수록 조회(=SELECT) <strong>성능이 개선</strong>되고 데이터를 변경하는 DML(INSERT, DELETE, UPDATE)은 정렬로 인해 <strong>성능이 저하</strong>됩니다.</li>
+</ul>
+
+<h3 id="인덱스의-종류">
+<a class="anchor" href="#%EC%9D%B8%EB%8D%B1%EC%8A%A4%EC%9D%98-%EC%A2%85%EB%A5%98" aria-hidden="true"><span class="octicon octicon-link"></span></a>인덱스의 종류</h3>
+<ul>
+  <li>인덱스는 크게 아래 두가지 종류로 나뉩니다.
+    <ol>
+      <li>기본 키 (Primary Key)
+        <ul>
+          <li>해당 테이블에서 데이터를 식별할 수 있는 기준 값</li>
+          <li>Not Null (=Null을 허용하지 않음)</li>
+          <li>데이터 중복을 허용하지 않음</li>
+        </ul>
+      </li>
+      <li>보조 키 (Secondary Key)
+        <ul>
+          <li>PK를 제외한 모든 인덱스</li>
+          <li>유니크 키(Unique Key)는 PK와 성격이 비슷하며 PK를 대체할 수 있어 대체 키로 불림</li>
+        </ul>
+      </li>
+      <li>유니크 키 (Unique Key)
+        <ul>
+          <li>데이터 중복을 허용하지 않음</li>
+          <li>Unique Key에 대해 동등 조건(“=”)이 있는 쿼리는 옵티마이저가 1건만 찾으면 된다고 알려주는 효과가 있음</li>
+        </ul>
+      </li>
+    </ol>
+  </li>
+</ul>
+
+<h3 id="b-tree-인덱스">
+<a class="anchor" href="#b-tree-%EC%9D%B8%EB%8D%B1%EC%8A%A4" aria-hidden="true"><span class="octicon octicon-link"></span></a>B-Tree 인덱스</h3>
+<ul>
+  <li>인덱싱 알고리즘 중에 가장 일반적으로 사용되는 알고리즘</li>
+  <li>B-Tree 구조는 크게 아래 세가지 노드 타입으로 분류
+    <ol>
+      <li>루트 노드 (Root)
+        <ul>
+          <li>트리 구조의 가장 최상위에 존재하는 노드로, 하위에 자식 노드들이 존재.</li>
+        </ul>
+      </li>
+      <li>리프 노드 (Leaf)
+        <ul>
+          <li>트리 구조 가장 최하위에 존재하는 노드.</li>
+          <li>인덱스의 B-Tree 구조에서, 실제 데이터를 찾아가기 위한 주소값이 포함됨.</li>
+        </ul>
+      </li>
+      <li>브랜치 노드 (Branch)
+        <ul>
+          <li>루트, 리프 노드도 아닌 중간에 존재하는 모든 노드를 의미.</li>
+        </ul>
+      </li>
+    </ol>
+  </li>
+  <li>실제 데이터 파일의 레코드는 임의의 순서로 정렬되어 있지만, 
+InnoDB에서 Primary Key가 있는 경우에는 <strong>항상 PK순</strong>으로 저장된 클러스터 구조.</li>
+  <li>
+    <p>데이터 조회 시, B-Tree 인덱스를 통해 리프 노드에서 데이터 주소값을 이용하여 실제 레코드를 추출.</p>
+  </li>
+  <li>MySQL의 경우, 리프 노드에 실제 물리 주소값 대신, PK 값을 논리적인 주소값으로 사용.</li>
+</ul>
+
+<h4 id="b-tree-인덱스-키-추가">
+<a class="anchor" href="#b-tree-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%ED%82%A4-%EC%B6%94%EA%B0%80" aria-hidden="true"><span class="octicon octicon-link"></span></a>B-Tree 인덱스 키 추가</h4>
+<ol>
+  <li>저장될 위치 결정
+2-1. 레코드의 키 값과, 주소값을 B-Tree 리프노드에 저장
+2-2. 리프 노드에 저장할 공간이 없을 경우, 리프 노드의 분리(Split)가 필요해 상위 브랜치 노드까지 영향을 받음 (작업 비용이 커짐)</li>
+</ol>
+
+<h4 id="b-tree-인덱스-키-삭제">
+<a class="anchor" href="#b-tree-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%ED%82%A4-%EC%82%AD%EC%A0%9C" aria-hidden="true"><span class="octicon octicon-link"></span></a>B-Tree 인덱스 키 삭제</h4>
+<ol>
+  <li>삭제될 데이터의 키 값이 저장된 리프 노드에 삭제 마크</li>
+  <li>인덱스 키 삭제에 대한 마킹 작업도 디스크 I/O가 필요한 작업이며, 5.5버전 이상부터는 비동기 처리가 가능해짐.</li>
+</ol>
+
+<h4 id="b-tree-인덱스-키-변경">
+<a class="anchor" href="#b-tree-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%ED%82%A4-%EB%B3%80%EA%B2%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a>B-Tree 인덱스 키 변경</h4>
+<ol>
+  <li>키 값에 따라 B-Tree 구조의 노드 위치가 결정되므로 단순 변경이 불가능.</li>
+  <li>기존 키 값을 삭제 후, 신규 키 값을 추가하는 형태로 처리 (InnoDB 상에서는 체인지 버퍼를 활용해 비동기 처리 진행)</li>
+</ol>
+
+<h4 id="b-tree-인덱스-키-검색">
+<a class="anchor" href="#b-tree-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%ED%82%A4-%EA%B2%80%EC%83%89" aria-hidden="true"><span class="octicon octicon-link"></span></a>B-Tree 인덱스 키 검색</h4>
+<ul>
+  <li>인덱스 생성을 하는 가장 주요한 이유는 <strong>검색 성능 향상</strong>을 위함.</li>
+  <li>데이터 조회 시, B-Tree 루트 노드에서부터 리프 노드 순으로 비교 작업을 수행. (= 트리 탐색)</li>
+  <li>인덱스를 이용한 검색은 다음과 같은 경우에 사용 가능.
+    <ol>
+      <li>일치 검색 (“=”)</li>
+      <li>키 값의 앞부분 Like 검색 (“LIKE ‘xxx%’”)</li>
+      <li>부등호 비교 조건 (“&lt;, &gt;, &lt;=, &gt;=”)</li>
+    </ol>
+  </li>
+  <li>인덱스 컬럼에 <strong>변형이 이뤄진 경우 사용 불가</strong>
+</li>
+</ul>
+
+<h3 id="b-tree-인덱스-사용에-영향을-주는-요소">
+<a class="anchor" href="#b-tree-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%EC%82%AC%EC%9A%A9%EC%97%90-%EC%98%81%ED%96%A5%EC%9D%84-%EC%A3%BC%EB%8A%94-%EC%9A%94%EC%86%8C" aria-hidden="true"><span class="octicon octicon-link"></span></a>B-Tree 인덱스 사용에 영향을 주는 요소</h3>
+<ol>
+  <li>인덱스 키 값의 크기</li>
+  <li>B-Tree 깊이</li>
+  <li>선택도 (Cardinality)</li>
+  <li>읽어야 하는 레코드의 건수</li>
+</ol>
+
+<p>B-Tree 인덱스의 기본 개념에 대해 정리해봤습니다. 이후 실제 쿼리를 통해 인덱스 사용 방법과, 종류에 대해 알아보겠습니다.</p>
+
+  </div><!-- from https://github.com/utterance/utterances
+<script src="https://utteranc.es/client.js"
+        repo="Martin-Son/Martin-IT-Blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>  -->
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://martin-it-study-blog.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a class="u-url" href="/Martin-IT-Blog/real%20mysql%208.0/mysql/2022/07/17/Real-Mysql-8.0-%EC%9D%B8%EB%8D%B1%EC%8A%A4(1).html" hidden></a>
+</article>
+
+<script>
+  function getTOCNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var tocNodes = nodes.filter(function(elem) {
+        return elem.tagName == "A";
+    });
+    return tocNodes;
+  }
+  function getHeaderNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var headerNodes = nodes.filter(function(elem) {
+        return elem.tagName == "H1" || elem.tagName == "H2" || elem.tagName == "H3" || elem.tagName == "H4" || elem.tagName == "H5" || elem.tagName == "H6";
+    });
+    return headerNodes;
+  }
+
+  var title = document.getElementsByClassName("post-title")[0];
+  var titleY = window.pageYOffset + title.getBoundingClientRect().top;
+  
+  var article = document.getElementsByClassName("post-article")[0];
+  var articleY = window.pageYOffset + article.getBoundingClientRect().top;
+
+  var toc = document.getElementsByClassName("toc")[0];
+
+  var headerNodes = getHeaderNodes(article);
+  var tocNodes = getTOCNodes(toc);
+
+  var before = undefined;
+
+  document.addEventListener('scroll', function(e) {
+    if (window.scrollY >= articleY-60) {
+      toc.style.cssText = "position: fixed; top: 60px;";
+    }
+    else {
+      toc.style.cssText = "";
+    }
+
+    var current = headerNodes.filter(function(header) {
+      var headerY = window.pageYOffset + header.getBoundingClientRect().top;
+      return window.scrollY >= headerY - 60;
+    });
+
+    if (current.length > 0) {
+      current = current[current.length-1];
+
+      var currentA = tocNodes.filter(function(tocNode) {
+        return tocNode.innerHTML == current.innerHTML;
+      })
+      
+      currentA = currentA[0];
+      if (currentA) {
+        if (before == undefined) before = currentA;
+
+        if (before != currentA) {
+          before.classList.remove("toc-active");
+          before = currentA;
+        }
+
+        currentA.classList.add("toc-active");
+      }
+      else {
+        if (before) 
+          before.classList.remove("toc-active");
+      }
+    }
+    else {
+      if (before) 
+          before.classList.remove("toc-active");
+    }
+
+  }, false);
+</script>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/Martin-IT-Blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/Martin-IT-Blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/https%3A%2F%2Fgithub.com%2FMartin-Son%2FMartin-IT-Blog" target="_blank" title="https://github.com/Martin-Son/Martin-IT-Blog"><svg class="svg-icon grey"><use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
