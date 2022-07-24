@@ -87,13 +87,10 @@ def save_backup_log(event, context):                # 이벤트를 전달받아 
 ### AWS 이벤트 브릿지 생성
 AWS RDS의 백업 이벤트 로그가 발생하는 시점에, 기록할 수 있도록 트리거인 이벤트 브릿지를 생성했습니다.
 
-* 이벤트 브릿지명, Description, 기본 동작 정의
 ![]({{ site.baseurl }}/images/slack_alarm_lambda/event_brige_1.png "이벤트브릿지명, Description 설정")
 
-* 수집할 이벤트 패턴 정의
 ![]({{ site.baseurl }}/images/slack_alarm_lambda/event_brige_2.png "수집 이벤트 패턴 정의(RDS backup Event)")
 
-* 설정한 Lambda에 해당 이벤트를 전달
 ![]({{ site.baseurl }}/images/slack_alarm_lambda/event_brige_3.png "이벤트를 전달한 Lambda 설정")
 
 사용자가 필요한 태그를 붙이는 과정은 생략했습니다. 위 과정을 거쳐, 이벤트 브릿지를 생성했다면 필요한 구성요소는 모두 준비됐습니다.
