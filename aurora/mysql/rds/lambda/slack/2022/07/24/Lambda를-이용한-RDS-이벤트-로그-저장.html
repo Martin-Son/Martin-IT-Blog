@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Lambda를 이용한 RDS 백업 로그 저장 | Martin’s Study Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Lambda를 이용한 RDS 백업 로그 저장" />
+<meta name="author" content="Martin.S" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="RDS 백업 로그 저장 Aurora RDS의 경우, 백업 로그가 [RDS]-[Event] 페이지에 기록됩니다. 해당 페이지에 기록되는 로그는 약 1~3일 이후 없어지는 휘발성 로그입니다. 필요에 따라, 특정 기간의 백업 로그를 저장하기 위해 lambda와 slack을 이용하여 로그 저장 프로세스를 구축해보게 됐습니다." />
+<meta property="og:description" content="RDS 백업 로그 저장 Aurora RDS의 경우, 백업 로그가 [RDS]-[Event] 페이지에 기록됩니다. 해당 페이지에 기록되는 로그는 약 1~3일 이후 없어지는 휘발성 로그입니다. 필요에 따라, 특정 기간의 백업 로그를 저장하기 위해 lambda와 slack을 이용하여 로그 저장 프로세스를 구축해보게 됐습니다." />
+<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/lambda/slack/2022/07/24/Lambda%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-RDS-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A1%9C%EA%B7%B8-%EC%A0%80%EC%9E%A5.html" />
+<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/lambda/slack/2022/07/24/Lambda%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-RDS-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A1%9C%EA%B7%B8-%EC%A0%80%EC%9E%A5.html" />
+<meta property="og:site_name" content="Martin’s Study Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-07-24T18:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Lambda를 이용한 RDS 백업 로그 저장" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-07-24T18:00:00-05:00","datePublished":"2022-07-24T18:00:00-05:00","description":"RDS 백업 로그 저장 Aurora RDS의 경우, 백업 로그가 [RDS]-[Event] 페이지에 기록됩니다. 해당 페이지에 기록되는 로그는 약 1~3일 이후 없어지는 휘발성 로그입니다. 필요에 따라, 특정 기간의 백업 로그를 저장하기 위해 lambda와 slack을 이용하여 로그 저장 프로세스를 구축해보게 됐습니다.","headline":"Lambda를 이용한 RDS 백업 로그 저장","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/lambda/slack/2022/07/24/Lambda%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-RDS-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A1%9C%EA%B7%B8-%EC%A0%80%EC%9E%A5.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/lambda/slack/2022/07/24/Lambda%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-RDS-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A1%9C%EA%B7%B8-%EC%A0%80%EC%9E%A5.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/Martin-IT-Blog/">Martin&#39;s Study Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/Martin-IT-Blog/about/">About Me</a><a class="page-link" href="/Martin-IT-Blog/gitInfo/">gitInfo</a><a class="page-link" href="/Martin-IT-Blog/search/">Search</a><a class="page-link" href="/Martin-IT-Blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Lambda를 이용한 RDS 백업 로그 저장</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-07-24T18:00:00-05:00" itemprop="datePublished">
+        Jul 24, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Martin.S</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      2 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Aurora">Aurora</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#MySQL">MySQL</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#RDS">RDS</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Lambda">Lambda</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Slack">Slack</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  
+  <div class="post-content e-content" itemprop="articleBody">    
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h3"><a href="#rds-백업-로그-저장">RDS 백업 로그 저장</a></li>
+<li class="toc-entry toc-h3"><a href="#기본-lambda-생성">기본 Lambda 생성</a></li>
+<li class="toc-entry toc-h3"><a href="#aws-이벤트-브릿지-생성">AWS 이벤트 브릿지 생성</a></li>
+<li class="toc-entry toc-h3"><a href="#결론">결론</a></li>
+</ul><h3 id="rds-백업-로그-저장">
+<a class="anchor" href="#rds-%EB%B0%B1%EC%97%85-%EB%A1%9C%EA%B7%B8-%EC%A0%80%EC%9E%A5" aria-hidden="true"><span class="octicon octicon-link"></span></a>RDS 백업 로그 저장</h3>
+<p>Aurora RDS의 경우, 백업 로그가 [RDS]-[Event] 페이지에 기록됩니다. 해당 페이지에 기록되는 로그는 약 1~3일 이후 없어지는 <strong>휘발성 로그</strong>입니다. 
+필요에 따라, 특정 기간의 백업 로그를 저장하기 위해 lambda와 slack을 이용하여 로그 저장 프로세스를 구축해보게 됐습니다.</p>
+
+<p>기본적인 라이브러리 설치나, 권한 관련 내용은 해당 글에 생략됐습니다.</p>
+
+<p>특정 슬랙 채널에 메세지를 보내기 위해선, slack에서 재공하는 api 앱 중 하나인 <code class="language-plaintext highlighter-rouge">incoming-webhook</code>을 사용합니다.
+해당 앱 설치는 slack에서 제공하는 <a href="https://slack.com/intl/ko-kr/help/articles/115005265063-Slack%EC%9A%A9-%EC%88%98%EC%8B%A0-%EC%9B%B9%ED%9B%84%ED%81%AC">설치 가이드</a>를 참고했습니다.</p>
+
+<h3 id="기본-lambda-생성">
+<a class="anchor" href="#%EA%B8%B0%EB%B3%B8-lambda-%EC%83%9D%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>기본 Lambda 생성</h3>
+<p>백업 이벤트 로그가 발생 했을 때, slack 채널에 해당 로그 전달을 위한 Lambda를 생성해줍니다.
+Lambda란, 별도의 서버 구성 없이 특정 상황(=트리거)에서 코드를 실행하여 필요한 프로세스를 구축할 수 있는 AWS 서비스입니다.
+자세한 내용은 <a href="https://docs.aws.amazon.com/ko_kr/lambda/latest/dg/welcome.html">AWS 공식 페이지</a>를 참고해주시면 됩니다.</p>
+
+<p>Lambda에서 지원하는 언어 중 하나인 python을 이용해 이벤트를 받아 slack에 전달하는 스크립트를 작성했습니다.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">boto3</span>
+
+<span class="kn">from</span> <span class="nn">dateutil</span> <span class="kn">import</span> <span class="n">tz</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="k">def</span> <span class="nf">post_slack</span><span class="p">(</span><span class="n">argStr</span><span class="p">):</span>                            <span class="c1"># 특정 slack 채널에 포스팅하는 함수 선언
+</span>    <span class="n">message</span> <span class="o">=</span> <span class="n">argStr</span>                      
+    <span class="n">send_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">"text"</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">send_text</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">send_data</span><span class="p">)</span>              <span class="c1"># 채널에 보낼 메시지 json형식으로 전환
+</span>    <span class="n">request</span> <span class="o">=</span> <span class="n">urllib</span><span class="p">.</span><span class="n">request</span><span class="p">.</span><span class="n">Request</span><span class="p">(</span>
+        <span class="s">"slack Hook 주소"</span><span class="p">,</span>                          <span class="c1"># incoming-webhook에서 제공한 url
+</span>        <span class="n">data</span><span class="o">=</span><span class="n">send_text</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">)</span>             <span class="c1"># 한글 관련 encoding 
+</span>    <span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">urllib</span><span class="p">.</span><span class="n">request</span><span class="p">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+        <span class="n">slack_message</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">save_backup_log</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>                <span class="c1"># 이벤트를 전달받아 백업 로그를 slack 채널에 전달할 메인 함수 선언
+</span>    
+    <span class="n">event_snapshot_nm</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'detail'</span><span class="p">][</span><span class="s">'SourceIdentifier'</span><span class="p">]</span> <span class="c1"># 스냅샷명
+</span>    <span class="n">evnet_source_type</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'detail'</span><span class="p">][</span><span class="s">'SourceType'</span><span class="p">]</span>       <span class="c1"># 이벤트 타입
+</span>    <span class="n">event_message</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'detail'</span><span class="p">][</span><span class="s">'Message'</span><span class="p">]</span>              <span class="c1"># 이벤트 로그
+</span>    <span class="n">event_arn</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'detail'</span><span class="p">][</span><span class="s">'SourceArn'</span><span class="p">]</span>                <span class="c1"># 이벤트 arn
+</span>    <span class="n">event_account_id</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'account'</span><span class="p">]</span>                     <span class="c1"># 이벤트 계정 ID
+</span>    
+    
+
+        
+    <span class="c1"># 로그시간 출력
+</span>    <span class="n">seoul_zone</span> <span class="o">=</span> <span class="n">tz</span><span class="p">.</span><span class="n">gettz</span><span class="p">(</span><span class="s">'Asia/Seoul'</span><span class="p">)</span>
+    <span class="n">utc_zone</span> <span class="o">=</span> <span class="n">tz</span><span class="p">.</span><span class="n">gettz</span><span class="p">(</span><span class="s">'US/Western'</span><span class="p">)</span>
+    
+    <span class="n">utc</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">kst</span> <span class="o">=</span> <span class="n">utc</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc_zone</span><span class="p">).</span><span class="n">astimezone</span><span class="p">(</span><span class="n">seoul_zone</span><span class="p">)</span>
+    <span class="n">kst_time</span> <span class="o">=</span> <span class="n">kst</span><span class="p">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">"%Y-%m-%d %H:%M:%S"</span><span class="p">)</span>
+    
+    <span class="k">print</span><span class="p">(</span><span class="n">event_message</span><span class="p">)</span>                                    <span class="c1"># 이벤트 메세지 확인용 print
+</span>    
+    <span class="k">if</span> <span class="s">'created'</span> <span class="ow">in</span> <span class="n">event_message</span><span class="p">:</span>                          <span class="c1"># 백업 성공 로그일 경우에만, slack 채널에 전달
+</span>
+        <span class="n">split_nm</span> <span class="o">=</span> <span class="n">event_snapshot_nm</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">':'</span><span class="p">)</span>
+        <span class="n">split_nm2</span> <span class="o">=</span> <span class="n">split_nm</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cluster_nm</span> <span class="o">=</span> <span class="n">split_nm2</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">17</span><span class="p">]</span>                       <span class="c1"># 스냅샷명에서, cluster명 필터링
+</span>        
+    
+        
+        <span class="n">print_text</span> <span class="o">=</span> <span class="n">kst_time</span> <span class="o">+</span> <span class="s">', '</span> <span class="o">+</span> <span class="n">cluster_nm</span> <span class="o">+</span> <span class="s">', '</span> <span class="o">+</span> <span class="n">event_message</span> <span class="o">+</span> <span class="s">', '</span> <span class="o">+</span> <span class="n">event_snapshot_nm</span>   <span class="c1"># 출력할 메세지 포맷 결정
+</span>        <span class="n">post_slack</span><span class="p">(</span><span class="n">print_text</span><span class="p">)</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s">"This is Not Target Event"</span><span class="p">)</span>                  <span class="c1"># 그외 이벤트는 람다 로그로만 남도록 설정.
+</span></code></pre></div></div>
+
+<h3 id="aws-이벤트-브릿지-생성">
+<a class="anchor" href="#aws-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%B8%8C%EB%A6%BF%EC%A7%80-%EC%83%9D%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>AWS 이벤트 브릿지 생성</h3>
+<p>AWS RDS의 백업 이벤트 로그가 발생하는 시점에, 기록할 수 있도록 트리거인 이벤트 브릿지를 생성했습니다.</p>
+
+<ul>
+  <li>
+    <p>이벤트 브릿지명, Description, 기본 동작 정의
+<img src="/Martin-IT-Blog/images/slack_alarm_lambda/event-brige-1.png" alt="" title="이벤트브릿지명, Description 설정"></p>
+  </li>
+  <li>
+    <p>수집할 이벤트 패턴 정의
+<img src="/Martin-IT-Blog/images/slack_alarm_lambda/event-brige-2.png" alt="" title="수집 이벤트 패턴 정의(RDS backup Event)"></p>
+  </li>
+  <li>
+    <p>설정한 Lambda에 해당 이벤트를 전달
+<img src="/Martin-IT-Blog/images/slack_alarm_lambda/event-brige-3.png" alt="" title="이벤트를 전달한 Lambda 설정"></p>
+  </li>
+</ul>
+
+<p>사용자가 필요한 태그를 붙이는 과정은 생략했습니다. 위 과정을 거쳐, 이벤트 브릿지를 생성했다면 필요한 구성요소는 모두 준비됐습니다.</p>
+
+<h3 id="결론">
+<a class="anchor" href="#%EA%B2%B0%EB%A1%A0" aria-hidden="true"><span class="octicon octicon-link"></span></a>결론</h3>
+<p>위와 같은 간단한 파이썬 스크립트를 통해 특정 slack 채널에 이벤트 로그를 남기는 프로세스 구축이 완료됐습니다.
+간단하지만, 필요할 때 유용하게 사용하면 좋은 기능이라고 생각됩니다.</p>
+
+  </div><!-- from https://github.com/utterance/utterances
+<script src="https://utteranc.es/client.js"
+        repo="Martin-Son/Martin-IT-Blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>  -->
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://martin-it-study-blog.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a class="u-url" href="/Martin-IT-Blog/aurora/mysql/rds/lambda/slack/2022/07/24/Lambda%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-RDS-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A1%9C%EA%B7%B8-%EC%A0%80%EC%9E%A5.html" hidden></a>
+</article>
+
+<script>
+  function getTOCNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var tocNodes = nodes.filter(function(elem) {
+        return elem.tagName == "A";
+    });
+    return tocNodes;
+  }
+  function getHeaderNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var headerNodes = nodes.filter(function(elem) {
+        return elem.tagName == "H1" || elem.tagName == "H2" || elem.tagName == "H3" || elem.tagName == "H4" || elem.tagName == "H5" || elem.tagName == "H6";
+    });
+    return headerNodes;
+  }
+
+  var title = document.getElementsByClassName("post-title")[0];
+  var titleY = window.pageYOffset + title.getBoundingClientRect().top;
+  
+  var article = document.getElementsByClassName("post-article")[0];
+  var articleY = window.pageYOffset + article.getBoundingClientRect().top;
+
+  var toc = document.getElementsByClassName("toc")[0];
+
+  var headerNodes = getHeaderNodes(article);
+  var tocNodes = getTOCNodes(toc);
+
+  var before = undefined;
+
+  document.addEventListener('scroll', function(e) {
+    if (window.scrollY >= articleY-60) {
+      toc.style.cssText = "position: fixed; top: 60px;";
+    }
+    else {
+      toc.style.cssText = "";
+    }
+
+    var current = headerNodes.filter(function(header) {
+      var headerY = window.pageYOffset + header.getBoundingClientRect().top;
+      return window.scrollY >= headerY - 60;
+    });
+
+    if (current.length > 0) {
+      current = current[current.length-1];
+
+      var currentA = tocNodes.filter(function(tocNode) {
+        return tocNode.innerHTML == current.innerHTML;
+      })
+      
+      currentA = currentA[0];
+      if (currentA) {
+        if (before == undefined) before = currentA;
+
+        if (before != currentA) {
+          before.classList.remove("toc-active");
+          before = currentA;
+        }
+
+        currentA.classList.add("toc-active");
+      }
+      else {
+        if (before) 
+          before.classList.remove("toc-active");
+      }
+    }
+    else {
+      if (before) 
+          before.classList.remove("toc-active");
+    }
+
+  }, false);
+</script>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/Martin-IT-Blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/Martin-IT-Blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/https%3A%2F%2Fgithub.com%2FMartin-Son%2FMartin-IT-Blog" target="_blank" title="https://github.com/Martin-Son/Martin-IT-Blog"><svg class="svg-icon grey"><use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
