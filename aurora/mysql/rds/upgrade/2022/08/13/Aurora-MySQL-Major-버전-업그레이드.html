@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Aurora MySQL Major 버전 업그레이드 | Martin’s Study Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Aurora MySQL Major 버전 업그레이드" />
+<meta name="author" content="Martin.S" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="AWS Major 버전 업그레이드 Aurora Major 버전을 업그레이드는 두 가지 방법(콘솔, cli)을 통해 진행할 수 있습니다. 이번 Post에서는 cli 명령어를 통해 업그레이드하는 방법과, 운영 상 순단시간 체크를 하는 방법에 대해 정리해보려 합니다." />
+<meta property="og:description" content="AWS Major 버전 업그레이드 Aurora Major 버전을 업그레이드는 두 가지 방법(콘솔, cli)을 통해 진행할 수 있습니다. 이번 Post에서는 cli 명령어를 통해 업그레이드하는 방법과, 운영 상 순단시간 체크를 하는 방법에 대해 정리해보려 합니다." />
+<link rel="canonical" href="https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/upgrade/2022/08/13/Aurora-MySQL-Major-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C.html" />
+<meta property="og:url" content="https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/upgrade/2022/08/13/Aurora-MySQL-Major-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C.html" />
+<meta property="og:site_name" content="Martin’s Study Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-08-13T18:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Aurora MySQL Major 버전 업그레이드" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Martin.S"},"dateModified":"2022-08-13T18:00:00-05:00","datePublished":"2022-08-13T18:00:00-05:00","description":"AWS Major 버전 업그레이드 Aurora Major 버전을 업그레이드는 두 가지 방법(콘솔, cli)을 통해 진행할 수 있습니다. 이번 Post에서는 cli 명령어를 통해 업그레이드하는 방법과, 운영 상 순단시간 체크를 하는 방법에 대해 정리해보려 합니다.","headline":"Aurora MySQL Major 버전 업그레이드","mainEntityOfPage":{"@type":"WebPage","@id":"https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/upgrade/2022/08/13/Aurora-MySQL-Major-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C.html"},"url":"https://martin-son.github.io/Martin-IT-Blog/aurora/mysql/rds/upgrade/2022/08/13/Aurora-MySQL-Major-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/Martin-IT-Blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://martin-son.github.io/Martin-IT-Blog/feed.xml" title="Martin's Study Blog" /><link rel="shortcut icon" type="image/x-icon" href="/Martin-IT-Blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/Martin-IT-Blog/">Martin&#39;s Study Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/Martin-IT-Blog/about/">About Me</a><a class="page-link" href="/Martin-IT-Blog/gitInfo/">gitInfo</a><a class="page-link" href="/Martin-IT-Blog/search/">Search</a><a class="page-link" href="/Martin-IT-Blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Aurora MySQL Major 버전 업그레이드</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-08-13T18:00:00-05:00" itemprop="datePublished">
+        Aug 13, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Martin.S</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      2 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Aurora">Aurora</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#MySQL">MySQL</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#RDS">RDS</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/Martin-IT-Blog/categories/#Upgrade">Upgrade</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  
+  <div class="post-content e-content" itemprop="articleBody">    
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#aws-major-버전-업그레이드">AWS Major 버전 업그레이드</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#테스트-구성">테스트 구성</a></li>
+<li class="toc-entry toc-h3"><a href="#업그레이드-순서">업그레이드 순서</a></li>
+<li class="toc-entry toc-h3"><a href="#테스트-결과">테스트 결과</a></li>
+</ul>
+</li>
+</ul><h2 id="aws-major-버전-업그레이드">
+<a class="anchor" href="#aws-major-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C" aria-hidden="true"><span class="octicon octicon-link"></span></a>AWS Major 버전 업그레이드</h2>
+<p>Aurora Major 버전을 업그레이드는 두 가지 방법(콘솔, cli)을 통해 진행할 수 있습니다.
+이번 Post에서는 cli 명령어를 통해 <strong>업그레이드하는 방법</strong>과, 운영 상 <strong>순단시간 체크</strong>를 하는 방법에 대해 정리해보려 합니다.</p>
+
+<p>업그레이드 시, 기존 파라미터 그룹과 동일하게 파라미터 그룹 설정이 필요하지만, 아래 테스트 과정에서는 설명상 편의를 위해 생략했습니다.</p>
+
+<h3 id="테스트-구성">
+<a class="anchor" href="#%ED%85%8C%EC%8A%A4%ED%8A%B8-%EA%B5%AC%EC%84%B1" aria-hidden="true"><span class="octicon octicon-link"></span></a>테스트 구성</h3>
+<ul>
+  <li>업그레이드 버전: <code class="language-plaintext highlighter-rouge">5.6.mysql_aurora.1.19.6</code> -&gt; <code class="language-plaintext highlighter-rouge">5.7.mysql_aurora.2.07.7</code>
+</li>
+  <li>인스턴스 타입: r5.xlarge</li>
+  <li>구성: Writer 1대 / Reader 1대</li>
+</ul>
+
+<h3 id="업그레이드-순서">
+<a class="anchor" href="#%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C-%EC%88%9C%EC%84%9C" aria-hidden="true"><span class="octicon octicon-link"></span></a>업그레이드 순서</h3>
+<ol>
+  <li>신규 메이저 버전을 위한 파라미터 그룹 생성
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> <span class="c">### 클러스터 파라미터 그룹 생성</span>
+ aws rds create-db-cluster-parameter-group <span class="se">\ </span>
+ <span class="nt">--db-cluster-parameter-group-name</span> <span class="o">[</span>신규 클러스터 파라미터그룹명] <span class="se">\ </span><span class="c"># (ex) aurora-5.7-mysql-upgrade-cluster-pg</span>
+ <span class="nt">--db-parameter-group-family</span> <span class="o">[</span>버전별 파라미터 그룹 family] <span class="se">\ </span><span class="c"># (ex) aurora-mysql5.7</span>
+ <span class="nt">--description</span> <span class="s2">"5.7 업그레이드 클러스터 파라미터 그룹"</span>
+
+ <span class="c">### 인스턴스 파라미터 그룹 생성</span>
+ aws rds create-db-parameter-group
+ <span class="nt">--db-parameter-group-name</span> <span class="o">[</span>신규 인스턴스 파라미터그룹명] <span class="se">\ </span><span class="c"># (ex) aurora-5.7-mysql-upgrade-pg</span>
+ <span class="nt">--db-parmaeter-group-family</span> <span class="o">[</span>버전별 파라미터 그룹 family] <span class="se">\ </span><span class="c"># (ex) 5.7 이상 aurora-mysql -&gt; aurora mysql</span>
+ <span class="nt">--description</span> <span class="s2">"5.7 업그레이드 인스턴스 파라미터 그룹"</span>
+</code></pre></div>    </div>
+  </li>
+  <li>버전 업그레이드를 위한 cli 준비
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>vi upgrade_cli.sh
+
+ aws rds modify-db-cluster <span class="se">\ </span>
+ <span class="nt">--db-cluster-identifier</span> <span class="o">[</span>클러스터명] <span class="se">\ </span>
+ <span class="nt">--engine-version</span> 5.7.mysql_aurora_2.07.7 <span class="se">\ </span>
+ <span class="nt">--allow-major-version-upgrade</span> <span class="se">\ </span>
+ <span class="nt">--db-cluster-parameter-group-name</span> <span class="o">[</span>신규 메이저 버전을 위한 클러스터 파라미터그룹] <span class="se">\ </span>
+ <span class="nt">--db-instance-parameter-group-name</span> <span class="o">[</span>신규 메이저 버전을 위한 인스턴스 파라미터그룹] <span class="se">\ </span>
+ <span class="nt">--apply-immediately</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Writer / Reader별 순단 체크
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>vi check_connection.sh
+
+ <span class="nv">log_writer</span><span class="o">=[</span>경로]/cluster_writer.log
+ <span class="nv">log_reader</span><span class="o">=[</span>경로]/cluster_reader.log
+ <span class="nv">no</span><span class="o">=</span>0
+
+ <span class="c"># 1초마다 순단 체크 루프문 구성</span>
+ <span class="k">while</span> <span class="o">[</span> <span class="nv">$no</span> <span class="nt">-le</span> 10 <span class="o">]</span>
+ <span class="k">do
+
+ </span>mysql <span class="nt">-u</span><span class="o">[</span>마스터계정] <span class="nt">-p</span><span class="o">[</span>비밀번호] <span class="nt">-P</span><span class="o">[</span>포트] <span class="nt">-h</span><span class="o">[</span>클러스터 Writer 엔드포인트] <span class="se">\ </span>
+ <span class="nt">-e</span> <span class="s2">"SELECT 'Cluster_Writer' as role, @@AURORA_SERVER_ID as aws_nm, aurora_version() as aws_version, CONCAT(VARIABLE_VALUE DIV 3600, '시간 ', MOD
+ (VARIABLE_VALUE DIV 60, 60), '분 ', MOD(VARIABLE_VALUE, 60),'초') AS Uptime, now() as dt FROM information_schema.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Uptime';"</span> <span class="o">&gt;&gt;</span> <span class="k">${</span><span class="nv">log_writer</span><span class="k">}</span><span class="s2">"
+
+ mysql -u[마스터계정] -p[비밀번호] -P[포트] -h[클러스터 Reader 엔드포인트] </span><span class="se">\ </span><span class="s2">
+ -e "</span>SELECT <span class="s1">'Cluster_Reader'</span> as role, @@AURORA_SERVER_ID as aws_nm, aurora_version<span class="o">()</span> as aws_version, CONCAT<span class="o">(</span>VARIABLE_VALUE DIV 3600, <span class="s1">'시간 '</span>, MOD<span class="o">(</span>VARIABLE_VALUE DIV 60, 60<span class="o">)</span>, <span class="s1">'분 '</span>, MOD<span class="o">(</span>VARIABLE_VALUE, 60<span class="o">)</span>,<span class="s1">'초'</span><span class="o">)</span> AS Uptime, now<span class="o">()</span> as dt FROM information_schema.GLOBAL_STATUS WHERE VARIABLE_NAME <span class="o">=</span> <span class="s1">'Uptime'</span><span class="p">;</span><span class="s2">" &gt;&gt; </span><span class="k">${</span><span class="nv">log_reader</span><span class="k">}</span><span class="s2">"</span>
+</code></pre></div>    </div>
+  </li>
+  <li>업그레이드 스크립트 실행 &amp; 백그라운드로 순단 체크 진행
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> <span class="c"># 업그레이드 스크립트 실행</span>
+ <span class="nv">$ </span>sh upgrade_cli.sh
+
+ <span class="c"># 백그라운드에서, 순단체크 스크립트 실행</span>
+ <span class="nv">$ </span><span class="nb">nohup </span>sh check_connercion.sh &amp;
+
+ <span class="c"># 순단체크 로깅 확인</span>
+ <span class="nv">$ </span><span class="nb">tail</span> <span class="nt">-f</span> cluster_writer.log <span class="c"># session A</span>
+ <span class="nv">$ </span><span class="nb">tail</span> <span class="nt">-f</span> cluster_reader.log <span class="c"># session B</span>
+</code></pre></div>    </div>
+  </li>
+  <li>업그레이드 상태 체크 &amp; 완료 후 파라미터 그룹 적용을 위한 재부팅
+    <div class="language-bash highlighter-rouge">
+<div class="highlight"><pre class="highlight"><code> aws rds describe-db-instances <span class="nt">--db-instance-identifier</span> <span class="o">[</span>DB 인스턴스명] <span class="se">\ </span>
+ <span class="nt">--query</span> <span class="s1">'*[].{DBInstanceIdentifier:DBInstanceIdentifier,DBInstanceStatus:DBInstanceStatus} | [0]'</span>
+
+ <span class="c"># (ex) 업그레이드 완료 시</span>
+ <span class="c">#       {</span>
+ <span class="c">#           "DBInstanceIDentifier": "sgy-test-220811-upgrade-1-instance-1",</span>
+ <span class="c">#           "DBInstanceStatus": "available"</span>
+ <span class="c">#       }</span>
+
+ <span class="c"># 업그레이드 완료 후, 파라미터 그룹 적용을 위한 재부팅</span>
+ aws rds reboot-db-instance <span class="nt">--db-instance-identifier</span> <span class="o">[</span>Writer 인스턴스명]
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="테스트-결과">
+<a class="anchor" href="#%ED%85%8C%EC%8A%A4%ED%8A%B8-%EA%B2%B0%EA%B3%BC" aria-hidden="true"><span class="octicon octicon-link"></span></a>테스트 결과</h3>
+<p>cli를 통한 업그레이드 진행 시, 순단 시간은 아래와 같은 결과를 얻을 수 있었습니다.</p>
+<ul>
+  <li>총 작업 시간: 25분 소요</li>
+  <li>순단 횟수 : <strong>총 2회 발생</strong>
+    <ul>
+      <li>업그레이드 도중 순단 발생: 약 11분 40초 소요</li>
+      <li>파라미터 그룹 적용을 위한 재부팅: 약 8초 소요</li>
+    </ul>
+  </li>
+</ul>
+
+<p>결과적으로 약 12분 가량 순단시간이 발생되며, 서비스 영향도가 가장 적과 시간에 메이저 버전 업그레이드를 진행하면 됩니다.
+위 순단 시간에도 크리티컬한 서비스 환경이라면, binlog를 이용한 복제를 사용하여 업그레이드를 진행하는 방법도 존재합니다.
+해당 방법은 다음 게시글에서 정리해보도록 하겠습니다.</p>
+
+
+  </div><!-- from https://github.com/utterance/utterances
+<script src="https://utteranc.es/client.js"
+        repo="Martin-Son/Martin-IT-Blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>  -->
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://martin-it-study-blog.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a class="u-url" href="/Martin-IT-Blog/aurora/mysql/rds/upgrade/2022/08/13/Aurora-MySQL-Major-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9C.html" hidden></a>
+</article>
+
+<script>
+  function getTOCNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var tocNodes = nodes.filter(function(elem) {
+        return elem.tagName == "A";
+    });
+    return tocNodes;
+  }
+  function getHeaderNodes(master) {
+    var nodes = Array.prototype.slice.call(master.getElementsByTagName("*"), 0);
+    var headerNodes = nodes.filter(function(elem) {
+        return elem.tagName == "H1" || elem.tagName == "H2" || elem.tagName == "H3" || elem.tagName == "H4" || elem.tagName == "H5" || elem.tagName == "H6";
+    });
+    return headerNodes;
+  }
+
+  var title = document.getElementsByClassName("post-title")[0];
+  var titleY = window.pageYOffset + title.getBoundingClientRect().top;
+  
+  var article = document.getElementsByClassName("post-article")[0];
+  var articleY = window.pageYOffset + article.getBoundingClientRect().top;
+
+  var toc = document.getElementsByClassName("toc")[0];
+
+  var headerNodes = getHeaderNodes(article);
+  var tocNodes = getTOCNodes(toc);
+
+  var before = undefined;
+
+  document.addEventListener('scroll', function(e) {
+    if (window.scrollY >= articleY-60) {
+      toc.style.cssText = "position: fixed; top: 60px;";
+    }
+    else {
+      toc.style.cssText = "";
+    }
+
+    var current = headerNodes.filter(function(header) {
+      var headerY = window.pageYOffset + header.getBoundingClientRect().top;
+      return window.scrollY >= headerY - 60;
+    });
+
+    if (current.length > 0) {
+      current = current[current.length-1];
+
+      var currentA = tocNodes.filter(function(tocNode) {
+        return tocNode.innerHTML == current.innerHTML;
+      })
+      
+      currentA = currentA[0];
+      if (currentA) {
+        if (before == undefined) before = currentA;
+
+        if (before != currentA) {
+          before.classList.remove("toc-active");
+          before = currentA;
+        }
+
+        currentA.classList.add("toc-active");
+      }
+      else {
+        if (before) 
+          before.classList.remove("toc-active");
+      }
+    }
+    else {
+      if (before) 
+          before.classList.remove("toc-active");
+    }
+
+  }, false);
+</script>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/Martin-IT-Blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/Martin-IT-Blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/https%3A%2F%2Fgithub.com%2FMartin-Son%2FMartin-IT-Blog" target="_blank" title="https://github.com/Martin-Son/Martin-IT-Blog"><svg class="svg-icon grey"><use xlink:href="/Martin-IT-Blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
