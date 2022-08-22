@@ -113,10 +113,10 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h2"><a href="#결론">결론</a></li>
 </ul><h2 id="pt-online-schema-change란-pt-osc">
 <a class="anchor" href="#pt-online-schema-change%EB%9E%80-pt-osc" aria-hidden="true"><span class="octicon octicon-link"></span></a>pt-online-schema-change란? (pt-osc)</h2>
-<p>MySQL을 사용하는 온라인 서비스의 경우 DDL에 <code class="language-plaintext highlighter-rouge">algorithm=inplace, lock=none</code> 옵션을 추가하여 테이블에 대한 Lock을 방지하고 
+<p>MySQL을 사용하는 온라인 서비스의 경우 DDL에 algorithm=inplace, lock=none 옵션을 추가하여 테이블에 대한 Lock을 방지하고 
 서비스 중인 DML 트랜잭션의 영향을 최소화할 수 있는 기능이 있어 서비스 중에도 대부분 온라인 DDL이 가능합니다.</p>
 
-<p>하지만, 해당 옵션이 지원되지 않는 작업 <code class="language-plaintext highlighter-rouge">(ex) 컬럼 type 변경</code>이 있어 이런 작업에 대해 
+<p>하지만, 해당 옵션이 지원되지 않는 작업이 있어 이런 작업에 대해 
 online ddl이 가능하도록 지원해주는 툴이 <strong>pt-online-schmea-change (=pt-osc)</strong>입니다.</p>
 
 <ul>
@@ -230,7 +230,7 @@ online ddl이 가능하도록 지원해주는 툴이 <strong>pt-online-schmea-ch
 <p>pt-osc 작업 중 예기치 못한 오류로 인해 실해하게 되면 위의 작동원리의 순서에 따라 생성된 오브젝트를 삭제해주어야 합니다.
 먼저 작업 중 실시간 데이터 동기화를 위해 생성된 <strong>트리거 삭제</strong>를 진행해야 합니다.</p>
 
-<p>현재 테스트에 사용된 3.0.13 버전 기준으로, 트리거는 <code class="language-plaintext highlighter-rouge">pt_osc_[테이블명]_ins/upd/del</code>과 같은 네이밍으로 생성됩니다.
+<p>현재 테스트에 사용된 3.0.13 버전 기준으로, 트리거는 pt_osc_[테이블명]_ins/upd/del 과 같은 네이밍으로 생성됩니다.
 이를 찾아 제거하기 위해, 아래 구문을 사용하여 찾아낸 트리거를 제거합니다.</p>
 
 <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">SHOW</span> <span class="n">TRIGGERS</span> <span class="k">LIKE</span> <span class="s1">'[테이블명]'</span><span class="p">;</span>
